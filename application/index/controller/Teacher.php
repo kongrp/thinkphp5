@@ -18,8 +18,10 @@ class Teacher
 		//输出$teachers中的0号元素
 		var_dump($teachers[0]);
 
-		//输出teachers中0号元素中的name值
+		//输出$teachers中0号元素中的name值
 		var_dump($teachers[0]['name']);
+		//如果变量的类型是个字符串，还可使用echo语句直接输出name值
+		return $teachers[0]['name'];
 
 	}
 }
