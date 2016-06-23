@@ -10,7 +10,9 @@ class TeacherController
 	{
 		$Teacher = new Teacher;
 		$teachers = $Teacher->select();
-		var_dump($teachers);
+
+		//获取第0个数据
+		$teacher = $teachers[0];
 
 	}
 }
