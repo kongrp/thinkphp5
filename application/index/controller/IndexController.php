@@ -2,7 +2,7 @@
 namespace app\index\controller;
 use think\Db; //引用数据库操作类
 
-class Index
+class IndexController
 {	
 	//我的方法名叫index
 	public function index()
