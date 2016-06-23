@@ -18,5 +18,8 @@ class Teacher
 		//输出$teachers中的0号元素
 		var_dump($teachers[0]);
 
+		//输出teachers中0号元素中的name值
+		var_dump($teachers[0]['name']);
+
 	}
 }
