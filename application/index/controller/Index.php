@@ -10,6 +10,7 @@ class Index
 	}
 
 	//test方法,输出hello yunzhi
+	//localhost/public/index/Index/test
 	public function test()
 	{
 		return 'hello yunzhi';
