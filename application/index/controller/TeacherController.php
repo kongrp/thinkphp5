@@ -8,19 +8,15 @@ class TeacherController
 {	
 	public function index()
 	{
-		$Teacher = new Teacher;
-		$teachers = $Teacher->select();
+		$JiaoShiBiao = new Teacher;
+        $SuoYouJiaoShi = $JiaoShiBiao->select();
 
-		//获取第0个数据
-		$teacher = $teachers[0];
+        // 获取第0个数据
+        $jiaoShiZhangSan = $SuoYouJiaoShi[0];
 
-		//调用上述对象的getData()方法，并传参
-		var_dump($teacher->getData('name'));
-
-		//并增加另外两个直接显示数据的方式
-		echo $teacher->getData('name');
-		return $teacher->getData('name');
-
+        // 调用上述对象的getData()方法
+        echo '教师姓名' . $jiaoShiZhangSan->getData('name') . '<br />';
+        return '重复一遍:教师姓名' . $jiaoShiZhangSan->getData('name');
 
 	}
 }
