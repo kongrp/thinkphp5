@@ -9,7 +9,8 @@ class TeacherController
 	public function index()
 	{
 		$Teacher = new Teacher;
-		var_dump($Teacher);
+		$teachers = $Teacher->select();
+		var_dump($teachers);
 
 	}
 }
