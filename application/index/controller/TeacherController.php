@@ -46,6 +46,7 @@ class TeacherController extends Controller
 	//新增数据
 	public function add()
 	{
-		return 'hello';
+		$htmls = $this->fetch();
+		return $htmls;
 	}
 }
