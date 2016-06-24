@@ -1,10 +1,11 @@
 <?php
 namespace app\index\controller;
+use think\Controller;  //用于与V层进行数据传递
 use app\model\Teacher;   //引用教师模型
 /**
- * 教师管理
+ * 教师管理，继承think\Controller后，就可以利用V层对数据进行打包了。
  */
-class TeacherController
+class TeacherController extends Controller
 {	
 	public function index()
 	{
@@ -14,15 +15,7 @@ class TeacherController
 		 // $teachers 以s结尾，表示它是一个数组，数据中的每一项都是一个对象，这个对象基于Teahcer这个模型。
 		$teachers = $Teacher->select();
 
-		//获取第0个数据
-		$teacher = $teachers[0];
-
-		//调用上述对象的getData()方法，并传参
-		var_dump($teacher->getData('name'));
-
-		//并增加另外两个直接显示数据的方式
-		return $teacher->getData('name');
-		echo $teacher->getData('name');
+		
 
 	}
 }
