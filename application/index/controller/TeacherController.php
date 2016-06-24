@@ -30,6 +30,10 @@ class TeacherController extends Controller
 	{
 		//查看数据是否以正确的方式传入并且insert已经正确接收
 		var_dump($_POST);
+
+		//使用input()助手函数并正确设置后，与直接输出的区别
+		$postData = input('post.');
+		var_dump($postData);
 	}
 
 	//新增数据
