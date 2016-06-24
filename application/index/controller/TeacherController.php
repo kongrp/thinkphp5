@@ -15,7 +15,11 @@ class TeacherController extends Controller
 		 // $teachers 以s结尾，表示它是一个数组，数据中的每一项都是一个对象，这个对象基于Teahcer这个模型。
 		$teachers = $Teacher->select();
 
+		//向V层传递数据
 		
+		//取回V层打包的数据
+		
+		//将数据返回给用户
 
 	}
 }
