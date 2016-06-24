@@ -40,5 +40,7 @@ class TeacherController extends Controller
 		var_dump($Teacher);
 
 		//向teacher表中插入数据并判断是否插入成功
+		$state = $Teacher->data($teacher)->save();
+		var_dump($state);
 	}
 }
