@@ -13,13 +13,13 @@
 			<td>邮箱</td>
 			<td>用户名</td>
 		</tr>
-		{volist name="teachers" id="teacher"}
+		{volist name="teachers" id="teacher" key="key"}
 		<tr>
-			<td>1</td>
-			<td>张三</td>
-			<td>男</td>
-			<td>11@maol.com</td>
-			<td>zhangsan</td>
+			<td>{$key}</td>
+			<td>{$teacher->getData('name')}</td>
+			<td>{$teacher->getData('sex')}</td>
+			<td>{$teacher->getData('email')}</td>
+			<td>{$teacher->getData('username')}</td>
 		</tr>
 		{/volist}
 	</table>
