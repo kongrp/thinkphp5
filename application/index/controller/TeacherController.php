@@ -41,4 +41,9 @@ class TeacherController extends Controller
 		$state = $Teacher->data($teacher)->save();
 		return $teacher->data('name').'成功增加到数据库中';
 	}
+
+	public function add()
+	{
+		return 'hello';
+	}
 }
