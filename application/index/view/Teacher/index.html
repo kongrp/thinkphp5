@@ -17,7 +17,7 @@
 		<tr>
 			<td>{$key}</td>
 			<td>{$teacher->getData('name')}</td>
-			<td>{$teacher->getData('sex')}</td>
+			<td>{eq name='$teacher->getData("sex")' value='0'}男{else /}女{/eq}</td>
 			<td>{$teacher->getData('email')}</td>
 			<td>{$teacher->getData('username')}</td>
 		</tr>
