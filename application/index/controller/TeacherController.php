@@ -25,6 +25,7 @@ class TeacherController extends Controller
 		return $htmls;
 	}
 
+	//插入数据
 	public function insert()
 	{
 		//新建测试数据
@@ -42,6 +43,7 @@ class TeacherController extends Controller
 		return $teacher->data('name').'成功增加到数据库中';
 	}
 
+	//新增数据
 	public function add()
 	{
 		return 'hello';
