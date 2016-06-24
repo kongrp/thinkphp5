@@ -25,18 +25,23 @@ class TeacherController extends Controller
 		return $htmls;
 	}
 
-	//插入数据
 	public function insert()
 	{
-		//查看数据是否以正确的方式传入并且insert已经正确接收
-		var_dump($_POST);
+		//接收传入数据
+		$teacher = input('post.');
+		var_dump($teacher);
+		
+		//引用Teacher模型
+		$Teacher = new Teacher();
+		var_dump($Teacher);
 
-		//使用input()助手函数并正确设置后，与直接输出的区别
-		$postData = input('post.');
-		var_dump($postData);
+		//插入数据
+		$Teacher->data($teacher)->save();
+
+		//反馈结果
+		return $teacher['name'].'新增成功';
 	}
 
-	//新增数据
 	public function add()
 	{
 		$htmls = $this->fetch();
