@@ -20,8 +20,13 @@ class TeacherController extends Controller
 
 		//取回V层打包的数据
 		$htmls = $this->fetch();
-		
+
 		//将数据返回给用户
 		return $htmls;
+	}
+
+	public function insert()
+	{
+		return 'hello';
 	}
 }
