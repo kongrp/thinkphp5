@@ -27,6 +27,19 @@ class TeacherController extends Controller
 
 	public function insert()
 	{
-		return 'hello';
+		//新建测试数据
+		$teacher = []; //等同于$teacher = array();
+		$teacher['name'] = '王五';
+		$teacher['username'] = 'wangwu';
+		$teacher['sex'] = '1';
+		$teacher['email'] = 'wangwu@yunzhi.club';
+		var_dump($teacher);
+
+
+
+
+		//引用teacher数据表对应的模型
+		
+		//向teacher表中插入数据并判断是否插入成功
 	}
 }
