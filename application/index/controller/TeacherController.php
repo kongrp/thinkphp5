@@ -33,8 +33,9 @@ class TeacherController extends Controller
 		//引用Teacher模型
 		$Teacher = new Teacher();
 
+		var_dump($teacher);
 		//插入数据,加入验证信息
-		$result = $Teacher->validate(true)->data($teacher)->save();
+		$result = $Teacher->validate(true)->save($teacher);
 		var_dump($result);
 
 		//反馈结果
