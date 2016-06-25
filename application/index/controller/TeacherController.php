@@ -56,6 +56,17 @@ class TeacherController extends Controller
 
 	public function delete()
 	{
-		return 'hello';
+		//引用教师模型
+		$Teacher = new Teacher;
+
+		//获取当前要删除的记录
+		$teacher = $Teacher::get(15);
+		
+		//删除当前ID的记录
+		$state = $teacher->delete();
+		var_dump($state);
+
+		return '删除成功';
+		
 	}
 }
