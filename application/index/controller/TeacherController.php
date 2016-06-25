@@ -53,4 +53,9 @@ class TeacherController extends Controller
 		$htmls = $this->fetch();
 		return $htmls;
 	}
+
+	public function delete()
+	{
+		return 'hello';
+	}
 }
