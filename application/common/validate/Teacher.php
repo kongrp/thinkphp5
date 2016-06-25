@@ -7,7 +7,12 @@ class Teacher extends Validate
 	// 当前验证的规则
     protected $rule = [
     	'email' => 'email',
-    ];
+    	'name'  => 'require',
+    	'username'  => 'require',
+    	'sex'  => 'require',
+    	'email'  => 'require',
+
+    	    ];
     // 验证提示信息
     protected $message = [
     	'email' => '邮箱格式有误',
