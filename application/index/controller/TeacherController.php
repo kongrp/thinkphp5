@@ -57,8 +57,13 @@ class TeacherController extends Controller
 	//http://localhost/thinkphp5/public/index/teacher/delete
 	public function delete()
 	{
+		var_dump(input('get.'));
+		die('程序终止');
+
+
+
 		//直接删除相关关键字记录
-		if($count = Teacher::destroy(14))
+		if($count = Teacher::destroy(13))
 		{
 			return '成功删除'.$count.'条数据';
 		}
