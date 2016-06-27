@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-en">
 <head>
 	<meta charset="UTF-8">
 	<title>教师管理</title>
@@ -10,19 +10,21 @@
 		<div class="col-md-12">
 			<table class="table table-hover table-bordered">
 				<tr class="info">
-					<td>序号</td>
-					<td>姓名</td>
-					<td>性别</td>
-					<td>邮箱</td>
-					<td>用户名</td>
+					<th>序号</th>
+					<th>姓名</th>
+					<th>性别</th>
+					<th>邮箱</th>
+					<th>用户名</th>
+					<th>操作</th>
 				</tr>
 				{volist name="teachers" id="teacher" key="key"}
 				<tr>
 					<td>{$key}</td>
 					<td>{$teacher->getData('name')}</td>
-					<td>{eq name='$teacher->getData("sex")' value='0'}男{else /}女{/eq}</td>
+					<td>{eq name='teacher->getData("sex")' value='0'}男{else /}女{/eq}</td>
 					<td>{$teacher->getData('email')}</td>
 					<td>{$teacher->getData('username')}</td>
+					<td><a href="delete?id={$teacher->getData('id')}">删除</a></td>
 				</tr>
 				{/volist}
 			</table>
