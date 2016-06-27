@@ -67,15 +67,7 @@ class TeacherController extends Controller
 			{
 				return "删除成功！";
 			}
-			else
-			{
-				return '删除失败！';
-			}
 		}
-		else{
-			return '删除失败！';
-		}		
+		return '删除失败！';
 	}
-
-
 }
