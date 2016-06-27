@@ -57,6 +57,7 @@ class TeacherController extends Controller
 	//http://localhost/thinkphp5/public/index/teacher/delete
 	public function delete()
 	{
+		//前两个断点都是3.4.3定制删除链接
 		var_dump(input('get.'));
 		die('程序终止');
 
