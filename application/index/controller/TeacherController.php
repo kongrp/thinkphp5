@@ -57,17 +57,10 @@ class TeacherController extends Controller
 	//http://localhost/thinkphp5/public/index/teacher/delete
 	public function delete()
 	{
-		//引用教师模型
-		$Teacher = new Teacher;
+		//直接删除相关关键字记录
+		$state = Teacher::destroy(15);
+		var_dump($state);
+		return '删除成功';
 		
-		if(false !== $teacher = $Teacher::get(16))
-		//删除当前ID的记录
-		{
-			if($state = $teacher->delete())
-			{
-				return "删除成功！";
-			}
-		}
-		return '删除失败！';
 	}
 }
