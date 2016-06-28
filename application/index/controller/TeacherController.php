@@ -57,18 +57,19 @@ class TeacherController extends Controller
 	//http://localhost/thinkphp5/public/index/teacher/delete
 	public function delete()
 	{
-		//前两个断点都是3.4.3定制删除链接
-		var_dump(input('get.'));
-		die('程序终止');
-
-
-
+		//接收id，并转换为int类型
+		$id = input('get.id/d');
+	
 		//直接删除相关关键字记录
-		if($count = Teacher::destroy(13))
+		if($count = Teacher::destroy($id))
 		{
-			return '成功删除'.$count.'条数据';
+			$message = '成功删除'.$count.'条数据';
+		}else{
+			$message = '删除失败';
 		}
-		return '删除失败';
+		;
+		//进行跳转,success()方法存在于think\Controller中，只要在C层中继承了这个类，便直接可以调用。功能：用于页面间的跳转。
+		return $this->success($message,url('index'));
 		
 	}
 }
