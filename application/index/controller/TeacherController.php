@@ -75,6 +75,6 @@ class TeacherController extends Controller
 
     public function edit()
     {
-    	return 'hello';
+    	var_dump(input('get.'));
     }
 }
