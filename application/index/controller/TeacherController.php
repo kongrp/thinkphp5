@@ -100,10 +100,18 @@ class TeacherController extends Controller
         
         // 将数据存入Teacher表
         $Teacher = new Teacher();
+        $message = '更新成功';
 
         // 依据状态定制提示信息
-        $Teacher->validate(true)->isUpdate(true)->save($teacher);
-       
-        return '更新成功';
+       try 
+       {
+        	if(false === $Teacher->validate(true)->isUpdate(true)->save($teacher))
+        	{
+        		$message = '更新失败：'.$Teacher->getError();
+        	}	
+        } catch (\Exception $e) {
+        	$message = '更新失败：'.$e->getMessage();
+        } 
+        return $message;
     }
 }
