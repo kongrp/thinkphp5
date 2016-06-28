@@ -102,12 +102,8 @@ class TeacherController extends Controller
         $Teacher = new Teacher();
 
         // 依据状态定制提示信息
-        if($Teacher->validate(true)->isUpdate(true)->save($teacher))
-        {
-        	$message = '更新成功';
-        }else{
-        	$message = '更新失败';
-        }
-        return $message;
+        $Teacher->validate(true)->isUpdate(true)->save($teacher);
+       
+        return '更新成功';
     }
 }
