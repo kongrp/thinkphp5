@@ -79,8 +79,10 @@ class TeacherController extends Controller
     	$id = input('get.id/d');
 
         // 在Teacher表模型中获取当前记录
-        if($teacher = Teacher::get($id))
+        if(false === $teacher = Teacher::get($id))
         {
+        	return '系统未找到ID为'.$id.'的记录';
+        }
         // 将数据传给V层
         $this->assign('teacher',$teacher);
 
@@ -88,9 +90,6 @@ class TeacherController extends Controller
         $htmls = $this->fetch();
 
         // 将封装好的V层内容返回给用户
-        return $htmls;
-        }
-
-        return '系统未找到ID为'.$id.'的记录';       
+        return $htmls;              
     }
 }
