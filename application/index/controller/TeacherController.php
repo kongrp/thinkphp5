@@ -89,9 +89,8 @@ class TeacherController extends Controller
 
         // 将封装好的V层内容返回给用户
         return $htmls;
-        }else{
-        	return '系统未找到ID为'.$id.'的记录';
         }
-        
+
+        return '系统未找到ID为'.$id.'的记录';       
     }
 }
