@@ -72,4 +72,9 @@ class TeacherController extends Controller
 		return $this->success($message,url('index'));
 		
 	}
+
+    public function edit()
+    {
+    	return 'hello';
+    }
 }
