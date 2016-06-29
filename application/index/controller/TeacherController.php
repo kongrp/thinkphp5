@@ -96,10 +96,10 @@ class TeacherController extends Controller
      public function update()
     {
         // 接收数据，取要更新的关键字信息
-        $id = input('post.id');
+    	$id = input('post.id');
 
         // 获取当前对象
-        $teacher = Teacher::get($id);
+       $teacher = Teacher::get($id);
 
         // 写入要更新的数据
         $teacher->name = input('post.name');
@@ -108,8 +108,12 @@ class TeacherController extends Controller
         $teacher->email = input('post.email');
 
         // 更新
-        var_dump($teacher->validate(true)->save());
-
-        return '更新成功';
+        $message = '更新成功';
+        if(false === $teacher->validate()->save())
+        {
+        	$message = '更新失败'.$teacher->getError();
+        }
+        
+        return $message;  
     }
 }

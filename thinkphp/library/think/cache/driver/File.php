@@ -25,13 +25,14 @@ class File
         'cache_subdir'  => false,
         'path_level'    => 1,
         'prefix'        => '',
+        'length'        => 0,
         'path'          => CACHE_PATH,
         'data_compress' => false,
     ];
 
     /**
      * 架构函数
-     * @param array $options
+     * @access public
      */
     public function __construct($options = [])
     {
@@ -53,11 +54,10 @@ class File
     {
         // 创建项目缓存目录
         if (!is_dir($this->options['path'])) {
-            if (mkdir($this->options['path'], 0755, true)) {
-                return true;
+            if (!mkdir($this->options['path'], 0755, true)) {
+                return false;
             }
         }
-        return false;
     }
 
     /**

@@ -15,7 +15,6 @@ use PDO;
 use PDOStatement;
 use think\Collection;
 use think\Db;
-use think\db\Query;
 use think\Debug;
 use think\Exception;
 use think\exception\DbBindParamException;
@@ -39,6 +38,8 @@ abstract class Connection
     protected $lastInsID;
     // 返回或者影响记录数
     protected $numRows = 0;
+    // 事务的数据库连接
+    protected $transPDO;
     // 事务指令数
     protected $transTimes = 0;
     // 事务标识
@@ -51,8 +52,6 @@ abstract class Connection
 
     /** @var PDO 当前连接ID */
     protected $linkID;
-    protected $linkRead;
-    protected $linkWrite;
 
     // 查询结果类型
     protected $resultSetType = Db::RESULTSET_ARRAY;
@@ -102,8 +101,6 @@ abstract class Connection
         'resultset_type' => Db::RESULTSET_ARRAY,
         // 自动写入时间戳字段
         'auto_timestamp' => false,
-        // 是否需要进行SQL性能分析
-        'sql_explain'    => false,
     ];
 
     // PDO连接参数
@@ -131,7 +128,7 @@ abstract class Connection
      * 创建指定模型的查询对象
      * @access public
      * @param string $model 模型类名称
-     * @return Query
+     * @return \think\Query
      */
     public function model($model)
     {
@@ -548,9 +545,9 @@ abstract class Connection
             }
             $this->commit($label);
             return $result;
-        } catch (\Exception $e) {
+        } catch (\PDOException $e) {
             $this->rollback();
-            throw $e;
+            return false;
         }
     }
 
@@ -571,9 +568,12 @@ abstract class Connection
         if (0 == $this->transTimes) {
             $this->transLabel = $label;
             $this->linkID->beginTransaction();
+            if (1 == $this->config['deploy']) {
+                $this->transPDO = $this->linkID;
+            }
         }
         $this->transTimes++;
-        return;
+        return null;
     }
 
     /**
@@ -585,11 +585,13 @@ abstract class Connection
      */
     public function commit($label = '')
     {
-        $this->initConnect(true);
         if ($this->transTimes > 0 && $label == $this->transLabel) {
             try {
                 $this->linkID->commit();
                 $this->transTimes = 0;
+                if (1 == $this->config['deploy']) {
+                    $this->transPDO = null;
+                }
             } catch (\PDOException $e) {
                 throw new PDOException($e, $this->config, $this->queryStr);
             }
@@ -605,11 +607,13 @@ abstract class Connection
      */
     public function rollback()
     {
-        $this->initConnect(true);
         if ($this->transTimes > 0) {
             try {
                 $this->linkID->rollback();
                 $this->transTimes = 0;
+                if (1 == $this->config['deploy']) {
+                    $this->transPDO = null;
+                }
             } catch (\PDOException $e) {
                 throw new PDOException($e, $this->config, $this->queryStr);
             }
@@ -643,6 +647,23 @@ abstract class Connection
             return false;
         }
         return true;
+    }
+
+    /**
+     * 将SQL语句中的__TABLE_NAME__字符串替换成带前缀的表名（小写）
+     * @access public
+     * @param string $sql sql语句
+     * @return string
+     */
+    public function parseSqlTable($sql)
+    {
+        if (false !== strpos($sql, '__')) {
+            $prefix = $this->config['prefix'];
+            $sql    = preg_replace_callback("/__([A-Z0-9_-]+)__/sU", function ($match) use ($prefix) {
+                return $prefix . strtolower($match[1]);
+            }, $sql);
+        }
+        return $sql;
     }
 
     /**
@@ -745,7 +766,7 @@ abstract class Connection
                 $log     = $this->queryStr . ' [ RunTime:' . $runtime . 's ]';
                 $result  = [];
                 // SQL性能分析
-                if ($this->config['sql_explain'] && 0 === stripos(trim($this->queryStr), 'select')) {
+                if (0 === stripos(trim($this->queryStr), 'select')) {
                     $result = $this->getExplain($this->queryStr);
                 }
                 // SQL监听
@@ -799,17 +820,12 @@ abstract class Connection
     protected function initConnect($master = true)
     {
         if (!empty($this->config['deploy'])) {
-            // 采用分布式数据库
-            if ($master) {
-                if (!$this->linkWrite) {
-                    $this->linkWrite = $this->multiConnect(true);
-                }
-                $this->linkID = $this->linkWrite;
+            if ($this->transPDO) {
+                // 使用事务连接
+                $this->linkID = $this->transPDO;
             } else {
-                if (!$this->linkRead) {
-                    $this->linkRead = $this->multiConnect(false);
-                }
-                $this->linkID = $this->linkRead;
+                // 采用分布式数据库
+                $this->linkID = $this->multiConnect($master);
             }
         } elseif (!$this->linkID) {
             // 默认单数据库

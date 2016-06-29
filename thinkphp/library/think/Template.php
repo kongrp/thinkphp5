@@ -52,7 +52,7 @@ class Template
 
     private $literal     = [];
     private $includeFile = []; // 记录所有模板包含的文件路径及更新时间
-    protected $storage;
+    protected $storage   = null;
 
     /**
      * 架构函数

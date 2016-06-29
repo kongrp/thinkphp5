@@ -13,8 +13,6 @@ namespace think\db;
 
 use PDO;
 use think\Db;
-use think\db\Connection;
-use think\db\Query;
 use think\Exception;
 
 abstract class Builder
@@ -40,9 +38,9 @@ abstract class Builder
     /**
      * 架构函数
      * @access public
-     * @param Connection $connection 数据库连接对象实例
+     * @param \think\db\Connection $connection 数据库连接对象实例
      */
-    public function __construct(Connection $connection)
+    public function __construct($connection)
     {
         $this->connection = $connection;
     }
@@ -50,10 +48,10 @@ abstract class Builder
     /**
      * 设置当前的Query对象实例
      * @access protected
-     * @param Query $query 当前查询对象实例
+     * @param \think\db\Query $query 当前查询对象实例
      * @return void
      */
-    public function setQuery(Query $query)
+    public function setQuery($query)
     {
         $this->query = $query;
     }
@@ -66,7 +64,7 @@ abstract class Builder
      */
     protected function parseSqlTable($sql)
     {
-        return $this->query->parseSqlTable($sql);
+        return $this->connection->parseSqlTable($sql);
     }
 
     /**
@@ -335,11 +333,7 @@ abstract class Builder
             $whereStr .= $key . ' ' . $exp . ' ' . $this->parseValue($data[0]) . ' AND ' . $this->parseValue($data[1]);
         } elseif (in_array($exp, ['NOT EXISTS', 'EXISTS'])) {
             // EXISTS 查询
-            if ($value instanceof \Closure) {
-                $whereStr .= $exp . ' ' . $this->parseClosure($value);
-            } else {
-                $whereStr .= $exp . ' (' . $value . ')';
-            }
+            $whereStr .= $exp . ' ' . $this->parseClosure($value);
         }
         return $whereStr;
     }
@@ -584,11 +578,8 @@ abstract class Builder
                         throw new Exception(' fields not exists :[' . $key . ']');
                     }
                     unset($data[$key]);
-                } elseif (is_scalar($val)) {
-                    $data[$key] = $this->parseValue($val);
                 } else {
-                    // 过滤掉非标量数据
-                    unset($data[$key]);
+                    $data[$key] = $this->parseValue($val);
                 }
             }
             $value    = array_values($data);

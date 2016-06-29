@@ -11,14 +11,12 @@
 
 namespace think;
 
-use think\Exception;
 use think\Input;
-use think\Request;
 
 class Validate
 {
     // 实例
-    protected static $instance;
+    protected static $instance = null;
 
     // 自定义的验证类型
     protected static $type = [];
@@ -228,7 +226,7 @@ class Validate
      * @param string $scene 验证场景
      * @return bool
      */
-    public function check($data, $rules = [], $scene = '')
+    public function check(&$data, $rules = [], $scene = '')
     {
         $this->error = [];
 
@@ -239,19 +237,6 @@ class Validate
 
         // 分析验证规则
         $scene = $this->getScene($scene);
-        if (is_array($scene)) {
-            // 处理场景验证字段
-            $change = [];
-            $array  = [];
-            foreach ($scene as $k => $val) {
-                if (is_numeric($k)) {
-                    $array[] = $val;
-                } else {
-                    $array[]    = $k;
-                    $change[$k] = $val;
-                }
-            }
-        }
 
         foreach ($rules as $key => $item) {
             // field => rule1|rule2... field=>['rule1','rule2',...]
@@ -277,15 +262,10 @@ class Validate
 
             // 场景检测
             if (!empty($scene)) {
-                if ($scene instanceof \Closure && !call_user_func_array($scene, [$key, $data])) {
+                if ($scene instanceof \Closure && !call_user_func_array($scene, [$key, &$data])) {
                     continue;
-                } elseif (is_array($scene)) {
-                    if (!in_array($key, $array)) {
-                        continue;
-                    } elseif (isset($change[$key])) {
-                        // 重载某个验证规则
-                        $rule = $change[$key];
-                    }
+                } elseif (is_array($scene) && !in_array($key, $scene)) {
+                    continue;
                 }
             }
 
@@ -324,11 +304,11 @@ class Validate
      * @param array $msg  提示信息
      * @return mixed
      */
-    protected function checkItem($field, $value, $rules, $data, $title = '', $msg = [])
+    protected function checkItem($field, $value, $rules, &$data, $title = '', $msg = [])
     {
         if ($rules instanceof \Closure) {
             // 匿名函数验证 支持传入当前字段和所有字段两个数据
-            $result = call_user_func_array($rules, [$value, $data]);
+            $result = call_user_func_array($rules, [$value, &$data]);
         } else {
             // 支持多规则验证 require|in:a,b,c|... 或者 ['require','in'=>'a,b,c',...]
             if (is_string($rules)) {
@@ -337,7 +317,7 @@ class Validate
             $i = 0;
             foreach ($rules as $key => $rule) {
                 if ($rule instanceof \Closure) {
-                    $result = call_user_func_array($rule, [$value, $data]);
+                    $result = call_user_func_array($rule, [$value, &$data]);
                 } else {
                     // 判断验证类型
                     if (is_numeric($key) && strpos($rule, ':')) {
@@ -359,7 +339,7 @@ class Validate
                         // 验证类型
                         $callback = isset(self::$type[$type]) ? self::$type[$type] : [$this, $type];
                         // 验证数据
-                        $result = call_user_func_array($callback, [$value, $rule, $data, $field]);
+                        $result = call_user_func_array($callback, [$value, $rule, &$data, $field]);
                     } else {
                         $result = true;
                     }
@@ -686,8 +666,7 @@ class Validate
      */
     protected function method($value, $rule)
     {
-        $method = Request::instance()->method();
-        return strtoupper($rule) == $method;
+        return REQUEST_METHOD == strtoupper($rule);
     }
 
     /**
@@ -977,7 +956,7 @@ class Validate
         if (!is_numeric($end)) {
             $end = strtotime($end);
         }
-        return $_SERVER['REQUEST_TIME'] >= $start && $_SERVER['REQUEST_TIME'] <= $end;
+        return NOW_TIME >= $start && NOW_TIME <= $end;
     }
 
     /**
@@ -1107,15 +1086,5 @@ class Validate
             $scene = [];
         }
         return $scene;
-    }
-
-    public static function __callStatic($method, $params)
-    {
-        $class = new static;
-        if (method_exists($class, $method)) {
-            return call_user_func_array([$class, $method], $params);
-        } else {
-            throw new Exception(__CLASS__ . ':' . $method . ' method not exist');
-        }
     }
 }

@@ -22,7 +22,7 @@ class Cache
      * @var object
      * @access protected
      */
-    protected static $handler;
+    protected static $handler = null;
 
     /**
      * 连接缓存

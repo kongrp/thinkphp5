@@ -11,9 +11,6 @@
 
 namespace think;
 
-use think\Hook;
-use think\Request;
-
 class Response
 {
     // 输出类型的实例化对象
@@ -51,20 +48,16 @@ class Response
     public function __construct($data = [], $type = '', $options = [])
     {
         $this->data = $data;
-        if (empty($type)) {
-            $isAjax = Request::instance()->isAjax();
-            $type   = $isAjax ? 'json' : 'html';
-        }
-        $this->type = strtolower($type);
+        $this->type = strtolower($type ?: (IS_AJAX ? 'json' : 'html'));
 
         if (isset($this->contentTypes[$this->type])) {
             $this->contentType($this->contentTypes[$this->type]);
         }
-        if (!empty($options)) {
+        if(!empty($options)){
             $this->options = array_merge($this->options, $options);
         }
         // 方便获取某个类型的实例
-        self::$instance[$this->type] = $this;
+        self::$instance[$this->type] = $this;        
     }
 
     /**
@@ -73,16 +66,10 @@ class Response
      * @param mixed $data 输出数据
      * @param string $type 输出类型
      * @param array $options 输出参数
-     * @return Response
      */
     public static function create($data = [], $type = '', $options = [])
     {
-        if (empty($type)) {
-            $isAjax = Request::instance()->isAjax();
-            $type   = $isAjax ? 'json' : 'html';
-        }
-        $type = strtolower($type);
-
+        $type = strtolower($type ?: (IS_AJAX ? 'json' : 'html'));
         if (!isset(self::$instance[$type])) {
             $class = (isset($options['namespace']) ? $options['namespace'] : '\\think\\response\\') . ucfirst($type);
             if (class_exists($class)) {
@@ -100,11 +87,10 @@ class Response
      * @access public
      * @param mixed $data 数据
      * @return mixed
-     * @throws Exception
      */
-    public function send($data = null)
+    public function send($data = [])
     {
-        $data = !is_null($data) ? $data : $this->data;
+        $data = $data ?: $this->data;
 
         if (isset($this->contentType)) {
             $this->contentType($this->contentType);
@@ -114,7 +100,7 @@ class Response
             $data = call_user_func_array($this->transform, [$data]);
         }
 
-        defined('RESPONSE_TYPE') or define('RESPONSE_TYPE', $this->type);
+        defined('RESPONSE_TYPE') or define('RESPONSE_TYPE',$this->type);
 
         // 处理输出数据
         $data = $this->output($data);
@@ -207,7 +193,7 @@ class Response
         $result = [
             'code' => $code,
             'msg'  => $msg,
-            'time' => $_SERVER['REQUEST_TIME'],
+            'time' => NOW_TIME,
             'data' => $data,
         ];
         return $this->data($result);
@@ -216,17 +202,13 @@ class Response
     /**
      * 设置响应头
      * @access public
-     * @param string|array $name 参数名
+     * @param string $name 参数名
      * @param string $value 参数值
      * @return $this
      */
-    public function header($name, $value = null)
+    public function header($name, $value)
     {
-        if (is_array($name)) {
-            $this->header = array_merge($this->header, $name);
-        } else {
-            $this->header[$name] = $value;
-        }
+        $this->header[$name] = $value;
         return $this;
     }
 

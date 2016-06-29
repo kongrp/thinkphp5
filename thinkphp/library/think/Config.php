@@ -136,7 +136,7 @@ class Config
 
     /**
      * 设置配置参数 name为数组则为批量设置
-     * @param string|array $name 配置参数名（支持二级配置 .号分割）
+     * @param string $name 配置参数名（支持二级配置 .号分割）
      * @param mixed $value 配置值
      * @param string $range  作用域
      * @return mixed
@@ -177,11 +177,7 @@ class Config
      */
     public static function reset($range = '')
     {
-        $range = $range ?: self::$range;
-        if (true === $range) {
-            self::$config = [];
-        } else {
-            self::$config[$range] = [];
-        }
+        $range                          = $range ?: self::$range;
+        true === $range ? self::$config = [] : self::$config[$range] = [];
     }
 }

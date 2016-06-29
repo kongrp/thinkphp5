@@ -41,15 +41,13 @@ class Relation
     protected $localKey;
     // 数据表别名
     protected $alias;
-    // 当前关联的JOIN类型
-    protected $joinType;
 
     /**
      * 架构函数
      * @access public
-     * @param Model $model 上级模型对象
+     * @param \think\Model $model 上级模型对象
      */
-    public function __construct(Model $model)
+    public function __construct($model)
     {
         $this->parent = $model;
     }
@@ -69,7 +67,6 @@ class Relation
             'foreignKey' => $this->foreignKey,
             'localKey'   => $this->localKey,
             'alias'      => $this->alias,
-            'joinType'   => $this->joinType,
         ];
         return $name ? $info[$name] : $info;
     }
@@ -81,45 +78,48 @@ class Relation
         $relation   = $this->parent->$name();
         $foreignKey = $this->foreignKey;
         $localKey   = $this->localKey;
-
-        // 判断关联类型执行查询
-        switch ($this->type) {
-            case self::HAS_ONE:
-                $result = $relation->where($foreignKey, $this->parent->$localKey)->find();
-                break;
-            case self::BELONGS_TO:
-                $result = $relation->where($localKey, $this->parent->$foreignKey)->find();
-                break;
-            case self::HAS_MANY:
-                $result = $relation->select();
-                break;
-            case self::HAS_MANY_THROUGH:
-                $result = $relation->select();
-                break;
-            case self::BELONGS_TO_MANY:
-                // 关联查询
-                $pk                              = $this->parent->getPk();
-                $condition['pivot.' . $localKey] = $this->parent->$pk;
-                $result                          = $this->belongsToManyQuery($relation, $this->middle, $foreignKey, $localKey, $condition)->select();
-                foreach ($result as $set) {
-                    $pivot = [];
-                    foreach ($set->toArray() as $key => $val) {
-                        if (strpos($key, '__')) {
-                            list($name, $attr) = explode('__', $key, 2);
-                            if ('pivot' == $name) {
-                                $pivot[$attr] = $val;
-                                unset($set->$key);
+        if ($relation instanceof Relation) {
+            // 判断关联类型执行查询
+            switch ($this->type) {
+                case self::HAS_ONE:
+                    $result = $relation->where($foreignKey, $this->parent->$localKey)->find();
+                    break;
+                case self::BELONGS_TO:
+                    $result = $relation->where($localKey, $this->parent->$foreignKey)->find();
+                    break;
+                case self::HAS_MANY:
+                    $result = $relation->select();
+                    break;
+                case self::HAS_MANY_THROUGH:
+                    $result = $relation->select();
+                    break;
+                case self::BELONGS_TO_MANY:
+                    // 关联查询
+                    $pk                              = $this->parent->getPk();
+                    $condition['pivot.' . $localKey] = $this->parent->$pk;
+                    $result                          = $this->belongsToManyQuery($relation, $this->middle, $foreignKey, $localKey, $condition)->select();
+                    foreach ($result as $set) {
+                        $pivot = [];
+                        foreach ($set->toArray() as $key => $val) {
+                            if (strpos($key, '__')) {
+                                list($name, $attr) = explode('__', $key, 2);
+                                if ('pivot' == $name) {
+                                    $pivot[$attr] = $val;
+                                    unset($set->$key);
+                                }
                             }
                         }
+                        $set->pivot = new Pivot($pivot, $this->middle);
                     }
-                    $set->pivot = new Pivot($pivot, $this->middle);
-                }
-                break;
-            default:
-                // 直接返回
-                $result = $relation;
+                    break;
+                default:
+                    // 直接返回
+                    $result = $relation;
+            }
+            return $result;
+        } else {
+            return $relation;
         }
-        return $result;
     }
 
     /**
@@ -180,7 +180,7 @@ class Relation
                             if (!isset($data[$result->$localKey])) {
                                 $data[$result->$localKey] = [];
                             }
-                            $result->setAttr($relation, $this->resultSetBuild($data[$result->$localKey], $class));
+                            $result->__set($relation, $this->resultSetBuild($data[$result->$localKey], $class));
                         }
                     }
                     break;
@@ -209,7 +209,7 @@ class Relation
                                 $data[$result->$pk] = [];
                             }
 
-                            $result->setAttr($relation, $this->resultSetBuild($data[$result->$pk], $class));
+                            $result->__set($relation, $this->resultSetBuild($data[$result->$pk], $class));
                         }
                     }
                     break;
@@ -269,7 +269,7 @@ class Relation
                         if (!isset($data[$result->$localKey])) {
                             $data[$result->$localKey] = [];
                         }
-                        $result->setAttr($relation, $this->resultSetBuild($data[$result->$localKey], $class));
+                        $result->__set($relation, $this->resultSetBuild($data[$result->$localKey], $class));
                     }
                     break;
                 case self::BELONGS_TO_MANY:
@@ -283,7 +283,7 @@ class Relation
                         if (!isset($data[$pk])) {
                             $data[$pk] = [];
                         }
-                        $result->setAttr($relation, $this->resultSetBuild($data[$pk], $class));
+                        $result->__set($relation, $this->resultSetBuild($data[$pk], $class));
                     }
                     break;
 
@@ -318,7 +318,7 @@ class Relation
             // 设置关联模型属性
             $list[$modelName] = [];
         }
-        $result->setAttr($relation, new $model($list[$modelName]));
+        $result->__set($relation, new $model($list[$modelName]));
     }
 
     /**
@@ -399,17 +399,15 @@ class Relation
      * @param string $foreignKey 关联外键
      * @param string $localKey 关联主键
      * @param array  $alias 别名定义
-     * @param string $joinType JOIN类型
      * @return $this
      */
-    public function hasOne($model, $foreignKey, $localKey, $alias = [], $joinType = 'INNER')
+    public function hasOne($model, $foreignKey, $localKey, $alias)
     {
         $this->type       = self::HAS_ONE;
         $this->model      = $model;
         $this->foreignKey = $foreignKey;
         $this->localKey   = $localKey;
         $this->alias      = $alias;
-        $this->joinType   = $joinType;
 
         // 返回关联的模型对象
         return $this;
@@ -422,10 +420,9 @@ class Relation
      * @param string $foreignKey 关联外键
      * @param string $otherKey 关联主键
      * @param array  $alias 别名定义
-     * @param string $joinType JOIN类型
      * @return $this
      */
-    public function belongsTo($model, $foreignKey, $otherKey, $alias = [], $joinType = 'INNER')
+    public function belongsTo($model, $foreignKey, $otherKey, $alias)
     {
         // 记录当前关联信息
         $this->type       = self::BELONGS_TO;
@@ -433,7 +430,6 @@ class Relation
         $this->foreignKey = $foreignKey;
         $this->localKey   = $otherKey;
         $this->alias      = $alias;
-        $this->joinType   = $joinType;
 
         // 返回关联的模型对象
         return $this;

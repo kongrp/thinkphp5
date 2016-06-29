@@ -145,31 +145,29 @@ class Merge extends Model
      * @param mixed $data 数据
      * @param array $where 更新条件
      * @param bool $getId 新增的时候是否获取id
-     * @param bool $replace 是否replace
      * @return mixed
      */
-    public function save($data = [], $where = [], $getId = true, $replace = false)
+    public function save($data = [], $where = [], $getId = true)
     {
         if (!empty($data)) {
-            // 数据自动验证
-            if (!$this->validateData($data)) {
-                return false;
-            }
             // 数据对象赋值
             foreach ($data as $key => $value) {
-                $this->setAttr($key, $value);
+                $this->__set($key, $value);
             }
             if (!empty($where)) {
                 $this->isUpdate = true;
             }
         }
-
+        // 数据自动验证
+        if (!$this->validateData()) {
+            return false;
+        }
         // 数据自动完成
         $this->autoCompleteData($this->auto);
 
         // 自动写入更新时间
         if ($this->autoWriteTimestamp && $this->updateTime) {
-            $this->setAttr($this->updateTime, null);
+            $this->__set($this->updateTime, null);
         }
 
         $db = $this->db();
@@ -205,7 +203,7 @@ class Merge extends Model
 
                 // 自动写入创建时间
                 if ($this->autoWriteTimestamp && $this->createTime) {
-                    $this->setAttr($this->createTime, null);
+                    $this->__set($this->createTime, null);
                 }
 
                 if (false === $this->trigger('before_insert', $this)) {
@@ -215,7 +213,7 @@ class Merge extends Model
                 // 处理模型数据
                 $data = $this->parseData($this->name, $this->data);
                 // 写入主表数据
-                $result = $db->name($this->name)->strict(false)->insert($data, $replace);
+                $result = $db->name($this->name)->strict(false)->insert($data);
                 if ($result) {
                     $insertId = $db->getLastInsID();
                     // 写入外键数据
@@ -254,7 +252,7 @@ class Merge extends Model
             return false;
         }
 
-        $db = $this->db();
+        $db = $this->query;
         $db->startTrans('merge_delete_' . $this->name);
         try {
             $result = $db->delete($this->data);

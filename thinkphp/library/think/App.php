@@ -13,7 +13,6 @@ namespace think;
 
 use think\Config;
 use think\Exception;
-use think\exception\HttpException;
 use think\exception\HttpResponseException;
 use think\Hook;
 use think\Lang;
@@ -32,16 +31,24 @@ class App
     /**
      * 执行应用程序
      * @access public
-     * @param Request $request Request对象
+     * @param null|\think\Request $request Request对象
      * @return mixed
      * @throws Exception
      */
-    public static function run(Request $request = null)
+    public static function run($request = null)
     {
         is_null($request) && $request = Request::instance();
 
-        // 初始化应用
-        $config = self::init('', Config::get());
+        define('REQUEST_METHOD', $request->method());
+        define('IS_GET', REQUEST_METHOD == 'GET' ? true : false);
+        define('IS_POST', REQUEST_METHOD == 'POST' ? true : false);
+        define('IS_PUT', REQUEST_METHOD == 'PUT' ? true : false);
+        define('IS_DELETE', REQUEST_METHOD == 'DELETE' ? true : false);
+        define('IS_AJAX', $request->isAjax());
+        define('__EXT__', $request->ext());
+
+        // 初始化应用（公共模块）
+        $config = self::initModule(COMMON_MODULE, Config::get());
 
         // 注册根命名空间
         if (!empty($config['root_namespace'])) {
@@ -61,32 +68,31 @@ class App
         // 设置系统时区
         date_default_timezone_set($config['default_timezone']);
 
+        // 监听app_init
+        Hook::listen('app_init');
+
+        // 开启多语言机制
+        if ($config['lang_switch_on']) {
+            // 获取当前语言
+            defined('LANG_SET') or define('LANG_SET', Lang::range());
+            // 加载系统语言包
+            Lang::load(THINK_PATH . 'lang' . DS . LANG_SET . EXT);
+            if (!APP_MULTI_MODULE) {
+                Lang::load(APP_PATH . 'lang' . DS . LANG_SET . EXT);
+            }
+        }
+
+        // 获取当前请求的调度信息
+        $dispatch = $request->dispatch();
+        if (empty($dispatch)) {
+            // 未指定调度类型 则进行URL路由检测
+            $dispatch = self::route($request, $config);
+        }
+        // 记录路由信息
+        APP_DEBUG && Log::record('[ ROUTE ] ' . var_export($dispatch, true), 'info');
+        // 监听app_begin
+        Hook::listen('app_begin', $dispatch);
         try {
-            // 监听app_init
-            Hook::listen('app_init');
-
-            // 开启多语言机制
-            if ($config['lang_switch_on']) {
-                // 获取当前语言
-                defined('LANG_SET') or define('LANG_SET', Lang::range());
-                // 加载系统语言包
-                Lang::load(THINK_PATH . 'lang' . DS . LANG_SET . EXT);
-                if (!APP_MULTI_MODULE) {
-                    Lang::load(APP_PATH . 'lang' . DS . LANG_SET . EXT);
-                }
-            }
-
-            // 获取当前请求的调度信息
-            $dispatch = $request->dispatch();
-            if (empty($dispatch)) {
-                // 未指定调度类型 则进行URL路由检测
-                $dispatch = self::route($request, $config);
-            }
-            // 记录路由信息
-            APP_DEBUG && Log::record('[ ROUTE ] ' . var_export($dispatch, true), 'info');
-            // 监听app_begin
-            Hook::listen('app_begin', $dispatch);
-
             switch ($dispatch['type']) {
                 case 'redirect':
                     // 执行重定向跳转
@@ -125,9 +131,7 @@ class App
         if ($data instanceof Response) {
             return $data->send();
         } elseif (!is_null($data)) {
-            // 默认自动识别响应输出类型
-            $isAjax = $request->isAjax();
-            $type   = $isAjax ? Config::get('default_ajax_return') : Config::get('default_return_type');
+            $type = IS_AJAX ? Config::get('default_ajax_return') : Config::get('default_return_type');
             return Response::create($data, $type)->send();
         }
     }
@@ -159,7 +163,7 @@ class App
     {
         if (empty($vars)) {
             // 自动获取请求变量
-            $vars = Request::instance()->param();
+            $vars = Request::param();
         }
         if (is_array($method)) {
             $class   = is_object($method[0]) ? $method[0] : new $method[0];
@@ -223,68 +227,63 @@ class App
         }
         if (APP_MULTI_MODULE) {
             // 多模块部署
-            $module    = strip_tags(strtolower($result[0] ?: $config['default_module']));
+            $module = strtolower($result[0] ?: $config['default_module']);
+            // 获取模块名称
+            define('MODULE_NAME', strip_tags($module));
             $bind      = Route::bind('module');
             $available = false;
             if ($bind) {
                 // 绑定模块
                 list($bindModule) = explode('/', $bind);
-                if ($module == $bindModule) {
+                if (MODULE_NAME == $bindModule) {
                     $available = true;
                 }
-            } elseif (!in_array($module, $config['deny_module_list']) && is_dir(APP_PATH . $module)) {
+            } elseif (!in_array(MODULE_NAME, $config['deny_module_list']) && is_dir(APP_PATH . MODULE_NAME)) {
                 $available = true;
             }
 
             // 模块初始化
-            if ($module && $available) {
+            if (MODULE_NAME && $available) {
+                define('MODULE_PATH', APP_PATH . MODULE_NAME . DS);
+                define('VIEW_PATH', MODULE_PATH . VIEW_LAYER . DS);
                 // 初始化模块
-                $config = self::init($module, $config);
+                $config = self::initModule(MODULE_NAME, $config);
             } else {
-                throw new HttpException(404, 'module [ ' . $module . ' ] not exists ');
+                throw new Exception('module [ ' . MODULE_NAME . ' ] not exists ', 10005);
             }
         } else {
             // 单一模块部署
-            $module = '';
+            define('MODULE_NAME', '');
+            define('MODULE_PATH', APP_PATH);
+            define('VIEW_PATH', MODULE_PATH . VIEW_LAYER . DS);
         }
-        // 当前模块路径
-        define('MODULE_PATH', APP_PATH . ($module ? $module . DS : ''));
 
         // 获取控制器名
-        $controller = strip_tags($result[1] ?: $config['default_controller']);
-        $controller = $config['url_controller_convert'] ? strtolower($controller) : $controller;
+        $controllerName = strip_tags($result[1] ?: $config['default_controller']);
+        defined('CONTROLLER_NAME') or define('CONTROLLER_NAME', $config['url_controller_convert'] ? strtolower($controllerName) : $controllerName);
 
         // 获取操作名
         $actionName = strip_tags($result[2] ?: $config['default_action']);
-        $actionName = $config['url_action_convert'] ? strtolower($actionName) : $actionName;
+        defined('ACTION_NAME') or define('ACTION_NAME', $config['url_action_convert'] ? strtolower($actionName) : $actionName);
 
         // 执行操作
-        if (!preg_match('/^[A-Za-z](\/|\.|\w)*$/', $controller)) {
+        if (!preg_match('/^[A-Za-z](\/|\.|\w)*$/', CONTROLLER_NAME)) {
             // 安全检测
-            throw new Exception('illegal controller name:' . $controller, 10000);
+            throw new Exception('illegal controller name:' . CONTROLLER_NAME, 10000);
         }
-
-        // 设置当前请求的模块、控制器、操作
-        $request = Request::instance();
-        $request->module($module)->controller($controller)->action($actionName);
-
-        // 监听module_init
-        Hook::listen('module_init', $request);
+        $instance = Loader::controller(CONTROLLER_NAME, '', $config['use_controller_suffix'], $config['empty_controller']);
+        // 获取当前操作名
+        $action = ACTION_NAME . $config['action_suffix'];
 
         try {
-            $instance = Loader::controller($controller, $config['url_controller_layer'], $config['use_controller_suffix'], $config['empty_controller']);
-
-            // 获取当前操作名
-            $action = $actionName . $config['action_suffix'];
-            if (!preg_match('/^[A-Za-z](\w)*$/', $action)) {
-                // 非法操作
-                throw new \ReflectionException('illegal action name :' . $actionName);
-            }
-
-            // 执行操作方法
+            // 操作方法开始监听
             $call = [$instance, $action];
             Hook::listen('action_begin', $call);
-
+            if (!preg_match('/^[A-Za-z](\w)*$/', $action)) {
+                // 非法操作
+                throw new \ReflectionException('illegal action name :' . ACTION_NAME);
+            }
+            // 执行操作方法
             $data = self::invokeMethod($call);
         } catch (\ReflectionException $e) {
             // 操作不存在
@@ -293,23 +292,23 @@ class App
                 $data   = $method->invokeArgs($instance, [$action, '']);
                 APP_DEBUG && Log::record('[ RUN ] ' . $method->getFileName(), 'info');
             } else {
-                throw new HttpException(404, 'method [ ' . (new \ReflectionClass($instance))->getName() . '->' . $action . ' ] not exists ');
+                throw new Exception('method [ ' . (new \ReflectionClass($instance))->getName() . '->' . $action . ' ] not exists ', 10002);
             }
         }
         return $data;
     }
 
     /**
-     * 初始化应用或模块
+     * 初始化模块
      * @access public
      * @param string $module 模块名
      * @param array $config 配置参数
      * @return void
      */
-    private static function init($module, $config)
+    private static function initModule($module, $config)
     {
         // 定位模块目录
-        $module = ($module && APP_MULTI_MODULE) ? $module . DS : '';
+        $module = (COMMON_MODULE == $module || !APP_MULTI_MODULE) ? '' : $module . DS;
 
         // 加载初始化文件
         if (is_file(APP_PATH . $module . 'init' . EXT)) {
@@ -384,12 +383,12 @@ class App
             $result = Route::check($request, $path, $depr, !IS_CLI ? $config['url_domain_deploy'] : false);
             if (APP_ROUTE_MUST && false === $result && $config['url_route_must']) {
                 // 路由无效
-                throw new HttpException(404, 'Not Found');
+                throw new Exception('route not define ');
             }
         }
         if (false === $result) {
             // 路由无效 解析模块/控制器/操作/参数... 支持控制器自动搜索
-            $result = Route::parseUrl($path, $depr, $config['controller_auto_search'], $config['url_param_type']);
+            $result = Route::parseUrl($path, $depr, $config['controller_auto_search']);
         }
         //保证$_REQUEST正常取值
         $_REQUEST = array_merge($_POST, $_GET, $_COOKIE);

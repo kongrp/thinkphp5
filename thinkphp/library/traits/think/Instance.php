@@ -11,8 +11,6 @@
 
 namespace traits\think;
 
-use \think\Exception;
-
 trait Instance
 {
     protected static $instance = null;
@@ -39,7 +37,7 @@ trait Instance
         if (0 === strpos($method, '_') && is_callable([self::$instance, $call])) {
             return call_user_func_array([self::$instance, $call], $params);
         } else {
-            throw new Exception("not exists method:" . $method);
+            throw new \think\Exception("not exists method:" . $method);
         }
     }
 }

@@ -245,12 +245,11 @@ class Session
 
     /**
      * 重新生成session_id
-     * @param bool $delete 是否删除关联会话文件
      * @return void
      */
-    private static function regenerate($delete = false)
+    private static function regenerate()
     {
-        session_regenerate_id($delete);
+        session_regenerate_id();
     }
 
     /**

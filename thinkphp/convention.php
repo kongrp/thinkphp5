@@ -39,7 +39,7 @@ return [
     // 默认模块名
     'default_module'         => 'index',
     // 禁止访问模块
-    'deny_module_list'       => ['common'],
+    'deny_module_list'       => [COMMON_MODULE],
     // 默认控制器名
     'default_controller'     => 'Index',
     // 默认操作名
@@ -63,14 +63,14 @@ return [
     'pathinfo_fetch'         => ['ORIG_PATH_INFO', 'REDIRECT_PATH_INFO', 'REDIRECT_URL'],
     // pathinfo分隔符
     'pathinfo_depr'          => '/',
+    // 获取当前页面地址的系统变量 默认为REQUEST_URI
+    'url_request_uri'        => 'REQUEST_URI',
     // URL伪静态后缀
     'url_html_suffix'        => 'html',
     // URL普通方式参数 用于自动生成
     'url_common_param'       => false,
     //url禁止访问的后缀
     'url_deny_suffix'        => 'ico|png|gif|jpg',
-    // URL参数方式 0 按名称成对解析 1 按顺序解析
-    'url_param_type'         => 0,
     // 是否开启路由
     'url_route_on'           => true,
     // 是否强制使用路由
@@ -83,10 +83,6 @@ return [
     'url_controller_convert' => true,
     // 是否自动转换URL中的操作名
     'url_action_convert'     => true,
-    // 默认的访问控制器层
-    'url_controller_layer'   => 'controller',
-    // 表单请求类型伪装变量
-    'var_method'             => '_method',
 
     // +----------------------------------------------------------------------
     // | 模板引擎设置

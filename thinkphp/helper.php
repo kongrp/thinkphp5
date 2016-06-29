@@ -84,7 +84,7 @@ function lang($name, $vars = [], $lang = '')
 
 /**
  * 获取和设置配置参数
- * @param string|array $name 参数名
+ * @param string $name 参数名
  * @param mixed $value 参数值
  * @param string $range 作用域
  * @return mixed
@@ -146,20 +146,9 @@ function widget($name, $data = [])
  * @param string $layer 业务层名称
  * @return \think\Model
  */
-function model($name = '', $layer = 'model')
+function model($name = '', $layer = MODEL_LAYER)
 {
     return Loader::model($name, $layer);
-}
-
-/**
- * 实例化验证器
- * @param string $name 验证器名称
- * @param string $layer 业务层名称
- * @return \think\Validate
- */
-function validate($name = '', $layer = 'validate')
-{
-    return Loader::validate($name, $layer);
 }
 
 /**
@@ -179,7 +168,7 @@ function db($name = '', $config = [])
  * @param string $layer 控制层名称
  * @return \think\Controller
  */
-function controller($name, $layer = 'controller')
+function controller($name, $layer = CONTROLLER_LAYER)
 {
     return Loader::controller($name, $layer);
 }
@@ -191,7 +180,7 @@ function controller($name, $layer = 'controller')
  * @param string $layer 要调用的控制层名称
  * @return mixed
  */
-function action($url, $vars = [], $layer = 'controller')
+function action($url, $vars = [], $layer = CONTROLLER_LAYER)
 {
     return Loader::action($url, $vars, $layer);
 }
@@ -348,7 +337,7 @@ function trace($log = '[think]', $level = 'log')
 
 /**
  * 获取当前Request对象实例
- * @return Request
+ * @return \think\Request
  */
 function request()
 {
@@ -356,15 +345,15 @@ function request()
 }
 
 /**
- * 创建普通 Response 对象实例
+ * 创建Response对象实例
  * @param mixed $data 输出数据
- * @param string $code 状态码
- * @param array $header 头信息
- * @return Response
+ * @param string $type 输出类型
+ * @param array $options 参数
+ * @return \think\Response
  */
-function response($data = [], $code = 200, $header = [], $type = 'html')
+function response($data = [], $type = '', $options = [])
 {
-    return Response::create($data, $type)->code($code)->header($header);
+    return Response::create($data, $type, $options);
 }
 
 /**
@@ -418,26 +407,11 @@ function xml($data = [], $code = 200, $options = [])
 /**
  * 获取\think\response\Redirect对象实例
  * @param mixed $url 重定向地址 支持Url::build方法的地址
- * @param array|integer $params 额外参数
  * @param integer $code 状态码
+ * @param array $params 额外参数
  * @return \think\response\Redirect
  */
-function redirect($url = [], $params = [], $code = 302)
+function redirect($url = [], $code = 302, $params = [])
 {
-    if (is_integer($params)) {
-        $code   = $params;
-        $params = [];
-    }
     return Response::create($url, 'redirect')->code($code)->params($params);
-}
-
-/**
- * 抛出HTTP异常
- * @param integer $code 状态码
- * @param string $message 错误信息
- * @param array $header 参数
- */
-function abort($code, $message = null, $header = [])
-{
-    throw new \think\exception\HttpException($code, $message, null, $header);
 }

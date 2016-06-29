@@ -15,7 +15,6 @@ use think\Cache;
 use think\Config;
 use think\Db;
 use think\Debug;
-use think\Request;
 
 /**
  * 页面Trace调试
@@ -42,11 +41,10 @@ class Trace
      */
     public function save(array $log = [])
     {
-        if (IS_CLI || IS_API || Request::instance()->isAjax() || (defined('RESPONSE_TYPE') && !in_array(RESPONSE_TYPE, ['html', 'view']))) {
+        if (IS_AJAX || IS_CLI || IS_API || (defined('RESPONSE_TYPE') && 'html' != RESPONSE_TYPE)) {
             // ajax cli api方式下不输出
             return false;
         }
-
         // 获取基本信息
         $runtime = microtime(true) - START_TIME;
         $reqs    = number_format(1 / number_format($runtime, 8), 2);
@@ -70,10 +68,8 @@ class Trace
 
         // 获取调试日志
         $debug = [];
-        foreach ($log as $type => $val) {
-            foreach ($val as $msg) {
-                $debug[$type][] = $msg;
-            }
+        foreach ($log as $line) {
+            $debug[$line['type']][] = $line['msg'];
         }
 
         // 页面Trace信息

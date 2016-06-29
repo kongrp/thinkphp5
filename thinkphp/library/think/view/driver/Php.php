@@ -13,7 +13,6 @@ namespace think\view\driver;
 
 use think\Exception;
 use think\Log;
-use think\Request;
 
 class Php
 {
@@ -40,7 +39,7 @@ class Php
      */
     public function exists($template)
     {
-        if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
+        if (!is_file($template)) {
             // 获取模板文件名
             $template = $this->parseTemplate($template);
         }
@@ -56,7 +55,7 @@ class Php
      */
     public function fetch($template, $data = [])
     {
-        if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
+        if (!is_file($template)) {
             // 获取模板文件名
             $template = $this->parseTemplate($template);
         }
@@ -91,32 +90,29 @@ class Php
      */
     private function parseTemplate($template)
     {
-        if (empty($this->config['view_path']) && defined('MODULE_PATH')) {
-            $this->config['view_path'] = MODULE_PATH . 'view' . DS;
+        if (empty($this->config['view_path']) && defined('VIEW_PATH')) {
+            $this->config['view_path'] = VIEW_PATH;
         }
 
+        $depr     = $this->config['view_depr'];
+        $template = str_replace(['/', ':'], $depr, $template);
         if (strpos($template, '@')) {
             list($module, $template) = explode('@', $template);
-            $path                    = APP_PATH . $module . DS . 'view' . DS;
+            $path                    = APP_PATH . (APP_MULTI_MODULE ? $module . DS : '') . VIEW_LAYER . DS;
         } else {
             $path = $this->config['view_path'];
         }
 
         // 分析模板文件规则
-        $request    = Request::instance();
-        $controller = $request->controller();
-        if ($controller && 0 !== strpos($template, '/')) {
-            $depr     = $this->config['view_depr'];
-            $template = str_replace(['/', ':'], $depr, $template);
+        if (defined('CONTROLLER_NAME')) {
             if ('' == $template) {
                 // 如果模板文件名为空 按照默认规则定位
-                $template = str_replace('.', DS, $controller) . $depr . $request->action();
+                $template = str_replace('.', DS, CONTROLLER_NAME) . $depr . ACTION_NAME;
             } elseif (false === strpos($template, $depr)) {
-                $template = str_replace('.', DS, $controller) . $depr . $template;
+                $template = str_replace('.', DS, CONTROLLER_NAME) . $depr . $template;
             }
         }
-        return $path . ltrim($template, '/') . '.' . ltrim($this->config['view_suffix'], '.');
-
+        return $path . $template . '.' . ltrim($this->config['view_suffix'], '.');
     }
 
 }

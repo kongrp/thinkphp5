@@ -15,10 +15,6 @@ return [
     'log'          => [
         'type' => 'trace', // 支持 socket trace file
     ],
-
-    //是否启用控制器类后缀
-    'use_controller_suffix' => true,
-
-    //设置变量过滤方法
+    'use_controller_suffix'  => true,
     'default_filter'=>'htmlspecialchars',
 ];

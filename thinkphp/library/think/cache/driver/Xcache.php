@@ -23,13 +23,13 @@ class Xcache
     protected $options = [
         'prefix' => '',
         'expire' => 0,
+        'length' => 0,
     ];
 
     /**
      * 架构函数
      * @param array $options 缓存参数
      * @access public
-     * @throws Exception
      */
     public function __construct($options = [])
     {

@@ -25,6 +25,7 @@ class Secache
         'path'    => '',
         'expire'  => 0,
         'prefix'  => '',
+        'length'  => 0,
     ];
 
     /**

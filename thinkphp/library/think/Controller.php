@@ -13,7 +13,6 @@ namespace think;
 
 \think\Loader::import('controller/Jump', TRAIT_PATH, EXT);
 
-use think\Exception;
 use think\Request;
 use think\View;
 
@@ -22,11 +21,9 @@ class Controller
     use \traits\controller\Jump;
 
     // 视图类实例
-    protected $view;
+    protected $view = null;
     // Request实例
     protected $request;
-    // 验证失败是否抛出异常
-    protected $failException = false;
 
     /**
      * 前置操作方法列表
@@ -42,9 +39,6 @@ class Controller
      */
     public function __construct(Request $request = null)
     {
-        if (is_null($request)) {
-            $request = Request::instance();
-        }
         $this->view    = View::instance(Config::get('template'), Config::get('view_replace_str'));
         $this->request = $request;
 
@@ -75,14 +69,14 @@ class Controller
             if (is_string($options['only'])) {
                 $options['only'] = explode(',', $options['only']);
             }
-            if (!in_array($this->request->action(), $options['only'])) {
+            if (!in_array(ACTION_NAME, $options['only'])) {
                 return;
             }
         } elseif (isset($options['except'])) {
             if (is_string($options['except'])) {
                 $options['except'] = explode(',', $options['except']);
             }
-            if (in_array($this->request->action(), $options['except'])) {
+            if (in_array(ACTION_NAME, $options['except'])) {
                 return;
             }
         }
@@ -94,77 +88,64 @@ class Controller
 
     /**
      * 加载模板输出
-     * @access protected
+     * @access public
      * @param string $template 模板文件名
      * @param array  $vars     模板输出变量
      * @param array $replace     模板替换
      * @param array $config     模板参数
      * @return mixed
      */
-    protected function fetch($template = '', $vars = [], $replace = [], $config = [])
+    public function fetch($template = '', $vars = [], $replace = [], $config = [])
     {
         return $this->view->fetch($template, $vars, $replace, $config);
     }
 
     /**
      * 渲染内容输出
-     * @access protected
+     * @access public
      * @param string $content 模板内容
      * @param array  $vars     模板输出变量
-     * @param array  $replace 替换内容
      * @param array $config     模板参数
      * @return mixed
      */
-    protected function display($content = '', $vars = [], $replace = [], $config = [])
+    public function display($content = '', $vars = [], $config = [])
     {
-        return $this->view->display($content, $vars, $replace, $config);
+        return $this->view->display($content, $vars, $config);
     }
 
     /**
      * 模板变量赋值
-     * @access protected
+     * @access public
      * @param mixed $name  要显示的模板变量
      * @param mixed $value 变量的值
      * @return void
      */
-    protected function assign($name, $value = '')
+    public function assign($name, $value = '')
     {
         $this->view->assign($name, $value);
     }
 
     /**
      * 初始化模板引擎
-     * @access protected
+     * @access public
      * @param array|string $engine 引擎参数
      * @return void
      */
-    protected function engine($engine)
+    public function engine($engine)
     {
         $this->view->engine($engine);
     }
 
     /**
-     * 设置验证失败后是否抛出异常
-     * @access protected
-     * @param bool $fail 是否抛出异常
-     * @return $this
-     */
-    protected function failException($fail = true)
-    {
-        $this->failException = $fail;
-        return $this;
-    }
-
-    /**
      * 验证数据
-     * @access protected
+     * @access public
      * @param array $data 数据
      * @param string|array $validate 验证器名或者验证规则数组
      * @param array $message 提示信息
      * @param mixed $callback 回调方法（闭包）
      * @return true|string|array
      */
-    protected function validate($data, $validate, $message = [], $callback = null)
+    public function validate($data, $validate, $message = [], $callback = null)
     {
         if (is_array($validate)) {
             $v = Loader::validate();
@@ -189,11 +170,7 @@ class Controller
         }
 
         if (!$v->check($data)) {
-            if ($this->failException) {
-                throw new Exception($v->getError());
-            } else {
-                return $v->getError();
-            }
+            return $v->getError();
         } else {
             return true;
         }

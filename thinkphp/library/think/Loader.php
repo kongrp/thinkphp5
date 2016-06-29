@@ -11,9 +11,6 @@
 
 namespace think;
 
-use think\exception\HttpException;
-use think\Request;
-
 class Loader
 {
     // 类名映射
@@ -29,14 +26,6 @@ class Loader
     private static $prefixDirsPsr4    = [];
     // PSR-0
     private static $prefixesPsr0 = [];
-    // Composer自动加载
-    private static $composerLoader = true;
-
-    // 自动加载Composer
-    public static function composerAutoLoader($auto)
-    {
-        self::$composerLoader = $auto;
-    }
 
     // 自动加载
     public static function autoload($class)
@@ -51,12 +40,19 @@ class Loader
                 }
             }
         }
-
-        if (!empty(self::$map[$class])) {
-            // 类库映射
-            include self::$map[$class];
-        } elseif (self::$composerLoader && $file = self::findFileInComposer($class)) {
+        // 检查是否定义类库映射
+        if (isset(self::$map[$class])) {
+            if (is_file(self::$map[$class])) {
+                // 记录加载信息
+                APP_DEBUG && self::$load[] = self::$map[$class];
+                include self::$map[$class];
+            } else {
+                return false;
+            }
+        } elseif ($file = self::findFileInComposer($class)) {
             // Composer自动加载
+            // 记录加载信息
+            APP_DEBUG && self::$load[] = $file;
             include $file;
         } else {
             // 命名空间自动加载
@@ -80,6 +76,8 @@ class Loader
                 if (APP_DEBUG && IS_WIN && false === strpos(realpath($filename), $class . EXT)) {
                     return false;
                 }
+                // 记录加载信息
+                APP_DEBUG && self::$load[] = $filename;
                 include $filename;
             } else {
                 return false;
@@ -122,11 +120,9 @@ class Loader
     public static function register($autoload = '')
     {
         // 注册系统自动加载
-        spl_autoload_register($autoload ?: 'think\\Loader::autoload');
+        spl_autoload_register($autoload ? $autoload : 'think\\Loader::autoload');
         // 注册composer自动加载
-        if (self::$composerLoader) {
-            self::registerComposerLoader();
-        }
+        self::registerComposerLoader();
     }
 
     // 注册composer自动加载
@@ -267,10 +263,9 @@ class Loader
      * @param string $name Model名称
      * @param string $layer 业务层名称
      * @param bool $appendSuffix 是否添加类名后缀
-     * @param string $common 公共模块名
      * @return Object
      */
-    public static function model($name = '', $layer = 'model', $appendSuffix = false, $common = 'common')
+    public static function model($name = '', $layer = MODEL_LAYER, $appendSuffix = false)
     {
         static $_model = [];
         if (isset($_model[$name . $layer])) {
@@ -279,13 +274,13 @@ class Loader
         if (strpos($name, '/')) {
             list($module, $name) = explode('/', $name, 2);
         } else {
-            $module = Request::instance()->module();
+            $module = APP_MULTI_MODULE ? MODULE_NAME : '';
         }
         $class = self::parseClass($module, $layer, $name, $appendSuffix);
         if (class_exists($class)) {
             $model = new $class();
         } else {
-            $class = str_replace('\\' . $module . '\\', '\\' . $common . '\\', $class);
+            $class = str_replace('\\' . $module . '\\', '\\' . COMMON_MODULE . '\\', $class);
             if (class_exists($class)) {
                 $model = new $class();
             } else {
@@ -304,17 +299,17 @@ class Loader
      * @param string $empty 空控制器名称
      * @return Object|false
      */
-    public static function controller($name, $layer = 'controller', $appendSuffix = false, $empty = '')
+    public static function controller($name, $layer = '', $appendSuffix = false, $empty = '')
     {
         static $_instance = [];
-
+        $layer            = $layer ?: CONTROLLER_LAYER;
         if (isset($_instance[$name . $layer])) {
             return $_instance[$name . $layer];
         }
         if (strpos($name, '/')) {
             list($module, $name) = explode('/', $name);
         } else {
-            $module = Request::instance()->module();
+            $module = APP_MULTI_MODULE ? MODULE_NAME : '';
         }
         $class = self::parseClass($module, $layer, $name, $appendSuffix);
         if (class_exists($class)) {
@@ -324,7 +319,7 @@ class Loader
         } elseif ($empty && class_exists($emptyClass = self::parseClass($module, $layer, $empty, $appendSuffix))) {
             return new $emptyClass(Request::instance());
         } else {
-            throw new HttpException(404, 'class [ ' . $class . ' ] not exists');
+            throw new Exception('class [ ' . $class . ' ] not exists', 10001);
         }
     }
 
@@ -333,30 +328,29 @@ class Loader
      * @param string $name 资源地址
      * @param string $layer 验证层名称
      * @param bool $appendSuffix 是否添加类名后缀
-     * @param string $common 公共模块名
      * @return Object|false
      */
-    public static function validate($name = '', $layer = 'validate', $appendSuffix = false, $common = 'common')
+    public static function validate($name = '', $layer = '', $appendSuffix = false)
     {
         $name = $name ?: Config::get('default_validate');
         if (empty($name)) {
             return new Validate;
         }
         static $_instance = [];
-
+        $layer            = $layer ?: VALIDATE_LAYER;
         if (isset($_instance[$name . $layer])) {
             return $_instance[$name . $layer];
         }
         if (strpos($name, '/')) {
             list($module, $name) = explode('/', $name);
         } else {
-            $module = Request::instance()->module();
+            $module = APP_MULTI_MODULE ? MODULE_NAME : '';
         }
         $class = self::parseClass($module, $layer, $name, $appendSuffix);
         if (class_exists($class)) {
             $validate = new $class;
         } else {
-            $class = str_replace('\\' . $module . '\\', '\\' . $common . '\\', $class);
+            $class = str_replace('\\' . $module . '\\', '\\' . COMMON_MODULE . '\\', $class);
             if (class_exists($class)) {
                 $validate = new $class;
             } else {
@@ -385,11 +379,11 @@ class Loader
      * @param bool $appendSuffix 是否添加类名后缀
      * @return mixed
      */
-    public static function action($url, $vars = [], $layer = 'controller', $appendSuffix = false)
+    public static function action($url, $vars = [], $layer = CONTROLLER_LAYER, $appendSuffix = false)
     {
         $info   = pathinfo($url);
         $action = $info['basename'];
-        $module = '.' != $info['dirname'] ? $info['dirname'] : Request::instance()->controller();
+        $module = '.' != $info['dirname'] ? $info['dirname'] : CONTROLLER_NAME;
         $class  = self::controller($module, $layer, $appendSuffix);
         if ($class) {
             if (is_scalar($vars)) {

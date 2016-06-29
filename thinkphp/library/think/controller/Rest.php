@@ -12,7 +12,6 @@
 namespace think\controller;
 
 use think\Response;
-use think\Request;
 
 abstract class Rest
 {
@@ -37,19 +36,17 @@ abstract class Rest
     public function __construct()
     {
         // 资源类型检测
-        $request = Request::instance();
-        $ext = $request->ext();
-        if ('' == $ext) {
+        if ('' == __EXT__) {
             // 自动检测资源类型
             $this->_type = $this->getAcceptType();
-        } elseif (!preg_match('/\(' . $this->restTypeList . '\)$/i', $ext)) {
+        } elseif (!preg_match('/\(' . $this->restTypeList . '\)$/i', __EXT__)) {
             // 资源类型非法 则用默认资源类型访问
             $this->_type = $this->restDefaultType;
         } else {
-            $this->_type = $ext;
+            $this->_type = __EXT__;
         }
         // 请求方式检测
-        $method = strtolower($request->method());
+        $method = strtolower(REQUEST_METHOD);
         if (false === stripos($this->restMethodList, $method)) {
             // 请求方式非法 则用默认请求方法
             $method = $this->restDefaultMethod;
@@ -60,10 +57,12 @@ abstract class Rest
     /**
      * REST 调用
      * @access public
+     *
      * @param string $method 方法名
      * @param array  $args   参数
+     *
      * @return mixed
-     * @throws \Exception
+     * @throws \think\Exception
      */
     public function _empty($method, $args)
     {
@@ -79,7 +78,7 @@ abstract class Rest
             return $this->$fun();
         } else {
             // 抛出异常
-            throw new \Exception('error action :' . $method);
+            throw new \Exception('error action :' . ACTION_NAME);
         }
     }
 
@@ -89,7 +88,7 @@ abstract class Rest
      * @param mixed $data 要返回的数据
      * @param String $type 返回类型 JSON XML
      * @param integer $code HTTP状态
-     * @return Response
+     * @return void
      */
     protected function response($data, $type = 'json', $code = 200)
     {

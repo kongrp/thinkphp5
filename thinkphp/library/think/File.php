@@ -106,7 +106,6 @@ class File extends SplFileObject
             return false;
         }
 
-        $path = rtrim($path, DS) . DS;
         // 文件保存命名规则
         $savename = $this->getSaveName($savename);
 
@@ -152,7 +151,7 @@ class File extends SplFileObject
                         $savename = substr($sha1, 0, 2) . DS . substr($sha1, 2);
                         break;
                     case 'date':
-                        $savename = date('Ymd') . DS . md5(microtime(true));
+                        $savename = date('Y-m-d') . DS . md5(microtime(true));
                         break;
                     default:
                         $savename = call_user_func($this->rule);
