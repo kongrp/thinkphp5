@@ -34,25 +34,39 @@ class TeacherController extends Controller
 
 	public function insert()
 	{
-		//接收传入数据
-		$teacher = input('post.');
-		
-		//引用Teacher模型
-		$Teacher = new Teacher();
+		$message    = '';   // 反馈消息
+        $error      = '';   // 反馈错误信息
+		try{
+			//接收传入数据
+			$teacher = input('post.');
+			
+			//引用Teacher模型
+			$Teacher = new Teacher();
 
-		var_dump($teacher);
-		//插入数据,加入验证信息
-		$result = $Teacher->validate(true)->save($teacher);
-		var_dump($result);
+			var_dump($teacher);
+			//插入数据,加入验证信息
+			$result = $Teacher->validate(true)->save($teacher);
 
-		//反馈结果
-		if(false === $result)
-		{
-			return '新增失败：'.$Teacher->getError();
-		} else
-		{
-			return $teacher['name'].'新增成功';
+			//反馈结果
+			if(false === $result)
+			{
+				$error = '新增失败：'.$Teacher->getError();
+			} else
+			{
+				$message = $teacher['name'].'新增成功';
+			}
+		}catch(\Exception $e){
+			$error = '系统错误'.getMessage();
 		}
+		
+		// 判断是否发生错误，返回不同信息。
+        if ($error === '')
+        {
+            return $this->success($message, url('index'));
+        } else {
+            return $this->error($error);
+        }
+		
 	}
 
 	public function add()
@@ -63,7 +77,6 @@ class TeacherController extends Controller
 		}catch(\Exception $e){
 			return '系统错误'.$e->getMessage();
 		}
-		
 	}
 
 	//http://localhost/thinkphp5/public/index/teacher/delete
