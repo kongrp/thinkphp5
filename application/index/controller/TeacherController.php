@@ -9,20 +9,27 @@ class TeacherController extends Controller
 {	
 	public function index()
 	{
-		// $Teacher 首写字大写，说明它是一个对象, 更确切一些说明这是基于Teacher这个模型被我们手工实例化的，如果存在teacher数据表的话，它对应teacher数据表
-		$Teacher = new Teacher;
+		try{
+			// $Teacher 首写字大写，说明它是一个对象, 更确切一些说明这是基于Teacher这个模型被我们手工实例化的，如果存在teacher数据表的话，它对应teacher数据表
+			$Teacher = new Teacher;
 
-		 // $teachers 以s结尾，表示它是一个数组，数据中的每一项都是一个对象，这个对象基于Teahcer这个模型。
-		$teachers = $Teacher->select();
+			 // $teachers 以s结尾，表示它是一个数组，数据中的每一项都是一个对象，这个对象基于Teahcer这个模型。
+			$teachers = $Teacher->select();
 
-		//向V层传递数据
-		$this->assign('teachers',$teachers);
+			//向V层传递数据
+			$this->assign('teachers',$teachers);
 
-		//取回V层打包的数据
-		$htmls = $this->fetch();
+			//取回V层打包的数据
+			$htmls = $this->fetch();
 
-		//将数据返回给用户
-		return $htmls;
+			//将数据返回给用户
+			return $htmls;
+		}catch(\Exception $e){
+			// 由于对异常进行了处理，如果发生了错误，我们仍然需要查看具体的异常位置及信息，那么需要将以下代码的注释去掉。
+            // throw $e;
+			return '系统错误'.getMessage();	
+		}
+		
 	}
 
 	public function insert()
