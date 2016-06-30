@@ -34,6 +34,21 @@ class TeacherController extends Controller
 		
 	}
 
+	public function test()
+	{
+		$pageSize = 5;
+		$Teacher = new Teacher;
+
+		//调用分页
+		$teachers = $Teacher->paginate($pageSize);
+		var_dump($teachers->count());
+
+		//不调用分页
+		$teachers = $Teacher->select();
+		var_dump($teachers);
+
+	}
+
 	public function insert()
 	{
 		$message    = '';   // 反馈消息
