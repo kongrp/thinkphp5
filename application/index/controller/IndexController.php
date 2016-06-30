@@ -15,6 +15,6 @@ class IndexController
 	//localhost/public/index/Index/test
 	public function test()
 	{
-		return 'hello yunzhi';
+		return '好的hello yunzhi';
 	}
 }
