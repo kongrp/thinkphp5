@@ -16,15 +16,11 @@ class TeacherController extends Controller
 			//设置每页大小
 			$pageSize = 5;
 
-			//获取偏移量offset
-			$offset = ($page-1)*$pageSize;
-
 			// $Teacher 首写字大写，说明它是一个对象, 更确切一些说明这是基于Teacher这个模型被我们手工实例化的，如果存在teacher数据表的话，它对应teacher数据表
 			$Teacher = new Teacher;
 
 			 // 调用分页
-			$teachers = $Teacher->limit($offset,$pageSize)->select();
-
+			$teachers = $Teacher->page($page,$pageSize)->select();
 			echo $Teacher->getLastSql();
 
 			//向V层传递数据
