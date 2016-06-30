@@ -20,7 +20,7 @@
 					<th>用户名</th>
 					<th>操作</th>
 				</tr>
-				{volist name="teachers" id="teacher" key="key"}
+				{foreach name="teachers->all()" id="teacher" key="key"}
 				<tr>
 					<td>{$key}</td>
 					<td>{$teacher->getData('name')}</td>
@@ -29,7 +29,7 @@
 					<td>{$teacher->getData('username')}</td>
 					<td><a href={:url('edit?id='.$teacher->getData('id'))}>编辑</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href={:url('delete?id='.$teacher->getData('id'))}>删除</a></td>
 				</tr>
-				{/volist}
+				{/foreach}
 			</table>
 			当前页面的条数为{$teachers->count()}
 			{$teachers->render()}
