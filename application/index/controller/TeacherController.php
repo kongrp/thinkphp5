@@ -9,33 +9,24 @@ class TeacherController extends Controller
 {	
 	public function index()
 	{
-		try{
-			//获取当前页
-			$page = input('get.page/d')<1?1:input('get.page/d');
+		try {
+            $pageSize = 5; // 每页显示5条数据
+            $Teacher = new Teacher; 
 
-			//设置每页大小
-			$pageSize = 5;
+            // 调用分页
+            $teachers = $Teacher->paginate($pageSize);
 
-			// $Teacher 首写字大写，说明它是一个对象, 更确切一些说明这是基于Teacher这个模型被我们手工实例化的，如果存在teacher数据表的话，它对应teacher数据表
-			$Teacher = new Teacher;
+            // 向V层传数据
+            $this->assign('teachers', $teachers);
 
-			 // 调用分页
-			$teachers = $Teacher->page($page,$pageSize)->select();
-			echo $Teacher->getLastSql();
+            // 取回打包后的数据
+            $htmls = $this->fetch();
 
-			//向V层传递数据
-			$this->assign('teachers',$teachers);
-
-			//取回V层打包的数据
-			$htmls = $this->fetch();
-
-			//将数据返回给用户
-			return $htmls;
-		}catch(\Exception $e){
-			// 由于对异常进行了处理，如果发生了错误，我们仍然需要查看具体的异常位置及信息，那么需要将以下代码的注释去掉。
-            // throw $e;
-			return '系统错误'.$e->getMessage();	
-		}
+            // 将数据返回给用户
+            return $htmls;
+        } catch (\Exception $e) {
+            return '系统错误' . $e->getMessage();
+        }
 		
 	}
 
