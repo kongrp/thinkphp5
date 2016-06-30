@@ -79,20 +79,31 @@ class TeacherController extends Controller
 	//http://localhost/thinkphp5/public/index/teacher/delete
 	public function delete()
 	{
-		//接收id，并转换为int类型
-		$id = input('get.id/d');
-	
-		//直接删除相关关键字记录
-		if($count = Teacher::destroy($id))
-		{
-			$message = '成功删除'.$count.'条数据';
-		}else{
-			$message = '删除失败';
-		}
-		;
-		//进行跳转,success()方法存在于think\Controller中，只要在C层中继承了这个类，便直接可以调用。功能：用于页面间的跳转。
-		return $this->success($message,url('index'));
+		$message = ''; //反馈正确消息
+		$error = '';   //反馈错误消息
+
+		try{
+				//接收id，并转换为int类型
+				$id = input('get.id/d');
+			
+				//直接删除相关关键字记录
+				if($count = Teacher::destroy($id))
+				{
+					$message = '成功删除'.$count.'条数据';
+				} else{
+					$error = '删除失败';
+				}
+			} catch(\Exception $e){
+			$error = '系统错误'.$e->getMessage();
+			}
 		
+		//进行跳转,success()方法存在于think\Controller中，只要在C层中继承了这个类，便直接可以调用。功能：用于页面间的跳转。
+		if($error ==='')
+		{
+			return $this->success($message,url('index'));
+		} else{
+			return $this->error($error,url('index'));
+		}
 	}
 
     public function edit()
