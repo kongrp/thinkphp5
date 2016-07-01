@@ -1,21 +1,31 @@
 <?php
 
 header("Content-Type:text/html;charset=utf-8");
-class Test
-{    
-    public function  __construct()
-    {
-        echo 'construct';
-    }
 
-    public function sayHello()
+class Father
+{
+    public function __construct()
     {
-        echo 'hello';
+        echo 'Father construct';
     }
 }
 
-$Test = new Test();
+class Son extends Father
+{
+    public function __construct()
+    {
+        // 先执行父类构造函数
+        //parent::__construct();
 
-echo '<br />';
+        echo 'Son construct';
+        // 后执行父类构造函数
+        parent::__construct();
+    }
+}
 
-$Test->sayHello();
+$br = '<br />';
+$Father = new Father;
+
+echo $br;
+
+$Son = new Son;
