@@ -10,11 +10,15 @@ class TeacherController extends Controller
 	public function index()
 	{
 		try {
+			//获取查询信息
+			$name = input('get.name');
+			echo $name;
+
             $pageSize = 5; // 每页显示5条数据
             $Teacher = new Teacher; 
 
             // 调用分页
-            $teachers = $Teacher->paginate($pageSize);
+            $teachers = $Teacher->where('name','like','%'.$name.'%')->paginate($pageSize);
 
             // 向V层传数据
             $this->assign('teachers', $teachers);
@@ -25,6 +29,7 @@ class TeacherController extends Controller
             // 将数据返回给用户
             return $htmls;
         } catch (\Exception $e) {
+        	throw $e;
             return '系统错误' . $e->getMessage();
         }
 		
