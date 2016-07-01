@@ -14,7 +14,7 @@ class LoginController extends Controller
 	//处理用户提交的登录数据
 	public function login()
 	{
-		echo 'hello';
+		var_dump(input('post.'));
 		// 验证用户名是否存在
 		// 验证密码是否正确
 		// 用户名密码正确 ，将teacherId 存session
