@@ -9,30 +9,35 @@ class TeacherController extends Controller
 {	
 	public function index()
 	{
-		try {
-			//获取查询信息
-			$name = input('get.name');
-			echo $name;
+		//验证用户是否登录
+		$teacherId = session('teacherId');
+		var_dump($teacherId);
+		if($teacherId === null)
+		{
+			return $this->error('plz login first',url('Login/index'));
+		}
 
-            $pageSize = 5; // 每页显示5条数据
-            $Teacher = new Teacher; 
 
-            // 调用分页
-            $teachers = $Teacher->where('name','like','%'.$name.'%')->paginate($pageSize);
 
-            // 向V层传数据
-            $this->assign('teachers', $teachers);
+		//获取查询信息
+		$name = input('get.name');
+		echo $name;
 
-            // 取回打包后的数据
-            $htmls = $this->fetch();
+        $pageSize = 5; // 每页显示5条数据
 
-            // 将数据返回给用户
-            return $htmls;
-        } catch (\Exception $e) {
-        	throw $e;
-            return '系统错误' . $e->getMessage();
-        }
-		
+        $Teacher = new Teacher; 
+
+        // 调用分页
+        $teachers = $Teacher->where('name','like','%'.$name.'%')->paginate($pageSize);
+
+        // 向V层传数据
+        $this->assign('teachers', $teachers);
+
+        // 取回打包后的数据
+        $htmls = $this->fetch();
+
+        // 将数据返回给用户
+        return $htmls;		
 	}
 
 	public function test()
