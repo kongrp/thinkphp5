@@ -36,6 +36,11 @@ class Teacher extends Model
      */
     public function checkPassword($password)
     {
-        return true;
+       if ($this->getData('password') === $password)
+        {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
