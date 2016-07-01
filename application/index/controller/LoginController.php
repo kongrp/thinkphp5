@@ -24,20 +24,15 @@ class LoginController extends Controller
 
 		//像我以前说过的，我们每调用一个方法，都要非常清晰的知道它返回值类型是什么。
         // $Teacher要么是一个对象，要么是false。
-		if(false !== $Teacher)
+		if(false !== $Teacher && $Teacher->getData('password') === input('post.password'))
 		{
-			// 验证密码是否正确
-			if($Teacher->getData('password') !== input('post.password'))
-			{
-				return $this->error('password incrrect',url(index));
-			} else{
-				// 用户名密码正确，将teacherId存session
-				session('teacherId',$Teacher->getData('id'));
-				return $this->success('login success',url('teacher/index'));
-			}
+			// 用户名密码正确，将teacherId存session
+			session('teacherId',$Teacher->getData('id'));
+			return $this->success('login success',url('teacher/index'));
 		} else{
-			// 用户名密码错误，跳转到登录界面
-			return $this->error('username not exist',url('index'));
-		} 
+			return $this->error('username or password incorrect',url(index));
+		}
+		
+		
 	}
 }
