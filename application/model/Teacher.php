@@ -56,5 +56,21 @@ class Teacher extends Model
         return true;
     }
 
-    
+
+	/**
+     * 判断用户是否已登录
+     * @return boolean 已登录true
+     * @author  panjie <panjie@yunzhiclub.com>
+     */
+		static public function isLogin()
+		{
+			$teacherId = session('teacherId');
+			if(isset($teacherId))
+			{
+				return true;
+			} else{
+				return false;
+			}
+		}
+		
 }

@@ -10,14 +10,18 @@ class TeacherController extends Controller
 	public function index()
 	{
 		//验证用户是否登录
+		if(!Teacher::isLogin())
+		{
+			return $this->error('plz login first',url('Login/index'));
+		}
+
+
 		$teacherId = session('teacherId');
 		var_dump($teacherId);
 		if($teacherId === null)
 		{
 			return $this->error('plz login first',url('Login/index'));
 		}
-
-
 
 		//获取查询信息
 		$name = input('get.name');
