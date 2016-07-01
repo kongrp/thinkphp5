@@ -43,4 +43,18 @@ class Teacher extends Model
             return false;
         }
     }
+
+    /**
+     * 注销
+     * @return bool  成功true，失败false。
+     * @author panjie
+     */
+    static public function logOut()
+    {
+        // 销毁session中数据
+        session('teacherId', null);
+        return true;
+    }
+
+    
 }
