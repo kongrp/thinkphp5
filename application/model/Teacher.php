@@ -11,6 +11,31 @@ class Teacher extends Model
 {
 	static public function login($username,$password)
 	{
-		return true;
-	}
+		// 验证用户是否存在
+		$map = array('username'=>$username);
+		$Teacher = self::get($map); 
+
+		if(false !== $Teacher)
+		{
+		// 验证密码是否正确
+		if ($Teacher->checkPassword($password))
+            {
+                // 登录
+                session('teacherId', $Teacher->getData('id'));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 验证密码是否正确
+     * @param  string $password 密码
+     * @return bool           
+     */
+    public function checkPassword($password)
+    {
+        return true;
+    }
 }
