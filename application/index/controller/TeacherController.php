@@ -7,15 +7,20 @@ use app\model\Teacher;   //引用教师模型
  */
 class TeacherController extends Controller
 {	
-	public function index()
+	//新建构造函数，并增加“验证用户是否登录”语句。
+	public function __construct()
 	{
+		parent::__construct();
+
 		//验证用户是否登录
 		if(!Teacher::isLogin())
 		{
 			return $this->error('plz login first',url('Login/index'));
 		}
+	}
 
-
+	public function index()
+	{
 		$teacherId = session('teacherId');
 		var_dump($teacherId);
 		if($teacherId === null)
