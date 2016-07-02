@@ -1,6 +1,7 @@
 <?php
 namespace app\index\Controller;
 use app\model\Klass;
+use app\model\Teacher;
 
 
 class KlassController extends IndexController
@@ -11,7 +12,7 @@ class KlassController extends IndexController
 		$name = input('get.name');
 		echo $name;
 
-        $pageSize = 2; // 每页显示5条数据
+        $pageSize = 10; // 每页显示5条数据
 
         $Klass = new Klass; 
 
@@ -30,14 +31,24 @@ class KlassController extends IndexController
 
 	public function add()
 	{
-		//$klasses = Klass::get($id);
+		//$Teacher
+		$teachers = Teacher::all();
 
-		//$this->assign('klasses',$klasses);
+		$this->assign('teachers',$teachers);
 		return $this->fetch();
 	}
 
 	public function save()
 	{
-		var_dump(input('post.'));
+		$klass = new Klass();
+		$klass->name = input('post.name');
+		$klass->teacher_id = input('post.teacher_id/d');
+		if(false === $klass->validate()->save())
+		{
+			return $this->error('数据添加错误'.$klass->getError());
+		} else{
+			return $this->success('数据添加成功',url('index'));
+		}
+
 	}
 }
