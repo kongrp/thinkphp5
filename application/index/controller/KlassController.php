@@ -92,8 +92,10 @@ class KlassController extends IndexController
 		} else{
 			return $this->success('更新成功','index');
 		}
+	}
 
-
-
+	public function delete()
+	{
+		echo 'hellodd';
 	}
 }
