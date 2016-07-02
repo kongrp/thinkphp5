@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>新增班级</title>
+</head>
+<body>
+	<form action="{:url('save')}" method="post">
+		<label for="name">班级名称:</label>
+			<input type="text" name="name" id="name" />&nbsp;&nbsp;&nbsp;
+		<label for="teacher">辅导员:</label>
+			<select name="teacher_id" id="teacher">
+				<option value="1">张三</option>
+				<option value="2">李四</option>
+				<option value="3">王五</option>
+			</select>&nbsp;&nbsp;&nbsp;
+		<button type="submit"">提交</button>
+	</form>	
+</body>
+</html>
