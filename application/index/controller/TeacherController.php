@@ -1,25 +1,11 @@
 <?php
 namespace app\index\controller;
-use think\Controller;  //用于与V层进行数据传递
 use app\model\Teacher;   //引用教师模型
 /**
  * 教师管理，继承think\Controller后，就可以利用V层对数据进行打包了。
  */
-class TeacherController extends Controller
+class TeacherController extends IndexController
 {	
-	//新建构造函数，并增加“验证用户是否登录”语句。
-	//除了可以测试index方法外，还可以测试add、delete等所有TeacherController中包括的方法。
-	public function __construct()
-	{
-		parent::__construct();
-
-		//验证用户是否登录
-		if(!Teacher::isLogin())
-		{
-			return $this->error('plz login first',url('Login/index'));
-		}
-	}
-
 	public function index()
 	{
 		$teacherId = session('teacherId');
