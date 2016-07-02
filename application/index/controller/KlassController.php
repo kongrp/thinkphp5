@@ -74,7 +74,7 @@ class KlassController extends IndexController
 
 	public function update()
 	{
-		$id = input('post.id');
+		$id = input('post.id/d');
 
 		//获取传入的班级信息
 		$Klass = Klass::get($id);
@@ -96,6 +96,28 @@ class KlassController extends IndexController
 
 	public function delete()
 	{
-		echo 'hellodd';
+		// 接收ID，并转换为int类型
+		$id = input('get.id/d');
+
+		//获取删除的对象
+		$Klass = Klass::get($id);
+
+		if(false === $Klass)
+		{
+			return $this->error('不存在id为' . $id . '的教师，删除失败');
+		} 
+
+		//删除获取到的对象
+		
+		if(false === $Klass->delete())
+		{
+			return $this->error('删除失败' . $Klass->getError());
+		} 
+
+		//进行跳转
+		return $this->success('删除成功', url('index'));
+		
+
+
 	}
 }
