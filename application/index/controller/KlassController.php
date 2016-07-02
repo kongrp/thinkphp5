@@ -7,7 +7,7 @@ class KlassController extends IndexController
 {
 	public function index()
 	{
-		$klasses = Klass::paginate();
+		$klasses = Klass::paginate(2);
 		$this->assign('klasses',$klasses);
 		return $this->fetch();
 	}
