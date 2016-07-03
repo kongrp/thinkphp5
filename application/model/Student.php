@@ -47,7 +47,7 @@ class Student extends Model
     //     return $this->belongsTo('klass');
     // }
     // 
-    public function Klass()
+    public function klass()
     {
         return $this->belongsTo('klass');
     }
