@@ -39,6 +39,17 @@ class Student extends Model
 		'create_time' => 'datetime',   //2038-01-19 08:00:00
 	];
 
-	
+	/**
+     * 只所以能调用到这个函数，是由一个__get()的魔法函数来完成的。
+    */
+    // public function Klass()
+    // {
+    //     return $this->belongsTo('klass');
+    // }
+    // 
+    public function Klass()
+    {
+        return $this->belongsTo('klass');
+    }
 
 }
