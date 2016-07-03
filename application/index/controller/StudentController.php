@@ -21,10 +21,6 @@ class StudentController extends IndexController
 		{
 			return $this->error('未找到ID为' . $id . '的记录');
 		}
-
-		//获取班级列表
-		$klasses = Klass::all();
-		$this->assign('klasses', $klasses);
 	
 		$this->assign('Student', $Student);
 		return $this->fetch();
@@ -32,6 +28,6 @@ class StudentController extends IndexController
 
 	public function update()
 	{
-		
+
 	}
 }
