@@ -27,8 +27,18 @@ class Student extends Model
 	 * @return string 转换后的字符串
 	 * @author kongrp kongruiping@yunzhiclub.com
 	 */
-	public function getCreateTimeAttr($value)
-	{
-		return date('Y-m-d',$value);
-	}
+	// public function getCreateTimeAttr($value)
+	// {
+	// 	return date('Y-m-d',$value);
+	// }
+
+	protected $dateFormat = 'Y年m月d日';   //日期格式,eg:2038年01月19日
+	//如果下面这种显示的格式不太符合我们的要求，我们还可以对日期显示格式进行覆盖，改为：protected $dateFormat = 'Y年m月d日';
+	
+	protected $type = [
+		'create_time' => 'datetime',   //2038-01-19 08:00:00
+	];
+
+	
+
 }
