@@ -9,8 +9,8 @@
 		<label for="name">名称：</label>
 		<input type="name" name="name" />
 		
-		{volist name="klasses" id="klass"}
-            <input type="checkbox" name="klass_id" id="klass_id_{$klass->id}" value="{$klass->id}" />
+		{volist name="Course->Klasses()->select()" id="klass"}
+            <input type="checkbox" name="klass_id[]" id="klass_id_{$klass->id}" value="{$klass->id}" />
             <label for="klass_id_{$klass->id}">{$klass->name}</label>
         {/volist}
 

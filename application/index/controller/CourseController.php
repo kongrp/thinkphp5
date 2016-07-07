@@ -13,7 +13,7 @@ class CourseController extends IndexController
 		//测试代码
 	}
 	
-	//要想在V层中输出班级列表，最简单的方法就是在C中获取后传入V层。
+	//要想在V层中输出班级列表，最简单的方法就是在C中获取后传入V层
 	public function add()
 	{
 		$klasses = Klass::all();
