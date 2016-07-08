@@ -87,23 +87,15 @@ class TeacherController extends IndexController
 
 	public function add()
 	{
-		// try{
-		// 	$htmls = $this->fetch();
-		// 	return $htmls;
-		// }catch(\Exception $e){
-		// 	return '系统错误'.$e->getMessage();
-		// }
-		
-		//现改为：add对应的V层调用edit.html,对于add与edit，我们发现，add没有传入teacher，而edit传入了teacher。
-		//将空的teacher传入
-		$teacher = new Teacher();
-		$this->assign('teacher', $teacher);
-
-		//调用edit模板
-		return $this->fetch('edit');
+		try{
+			$htmls = $this->fetch();
+			return $htmls;
+		}catch(\Exception $e){
+			return '系统错误'.$e->getMessage();
+		}
 	}
 
-	// http://localhost/thinkphp5/public/index/teacher/delete
+	//http://localhost/thinkphp5/public/index/teacher/delete
 	public function delete()
 	{
 		$message = ''; //反馈正确消息
