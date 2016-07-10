@@ -87,14 +87,6 @@ class TeacherController extends IndexController
 
 	public function add()
 	{
-		// try{
-		// 	$htmls = $this->fetch();
-		// 	return $htmls;
-		// }catch(\Exception $e){
-		// 	return '系统错误'.$e->getMessage();
-		// }
-		
-		//现改为：add对应的V层调用edit.html,对于add与edit，我们发现，add没有传入teacher，而edit传入了teacher。
 		//将空的teacher传入
 		$teacher = new Teacher();
 		$this->assign('teacher', $teacher);
@@ -103,7 +95,7 @@ class TeacherController extends IndexController
 		return $this->fetch('edit');
 	}
 
-	// http://localhost/thinkphp5/public/index/teacher/delete
+	//http://localhost/thinkphp5/public/index/teacher/delete
 	public function delete()
 	{
 		$message = ''; //反馈正确消息
@@ -199,5 +191,34 @@ class TeacherController extends IndexController
        } else{
        	return $this->error($error);
        }
+    }
+
+    //insert和update方法代码重复，统一为save方法
+    public function save()
+    {
+    	$id = input('post.id/d');
+
+    	if($id === 0)
+    	{
+    		$Teacher = new Teacher;
+    	} else {
+    		//如果接收到了id，则为编辑
+    		if(false === $Teacher = Teacher::get($id))
+    		{
+    			return $this->error('不存在id为：' . $id . '的记录');
+    		}
+    	}
+
+    	$Teacher->name = input('post.name');
+    	$Teacher->username = input('post.username');
+    	$Teacher->sex = input('post.sex');
+    	$Teacher->email = input('post.email');
+
+    	if(false === $Teacher->validate(true)->save())
+    	{
+    		return $this->error('操作失败' . $Teacher->getError());
+    	} else{
+    		return $this->success('操作成功', url('index'));
+    	}
     }
 }
