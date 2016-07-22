@@ -1,5 +1,5 @@
 <?php
-namespace app\index\Controller;
+namespace app\index\controller;
 use app\model\Student;
 use app\model\Klass;
 
